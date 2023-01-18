@@ -1,0 +1,21 @@
+%
+%       apply ASR cleaning using d2d_applyCleaning
+% 
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 11/07/2022 ver 0.1. Created
+% 
+%%  
+
+function EEG = d2d_applyCleaning( EEG, cfg )
+
+
+
+
+
+%% load datasets
+%!!!!
+
+%% call vis_artifacts function with these two datasets
+vis_artifacts(EEG_red , EEG_blue); % ! check colours and reference these in GUI as titles

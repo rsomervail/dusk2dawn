@@ -1,27 +1,11 @@
 %
-%
-%       - takes continuous whole-night sleep EEG data in EEGlab format
-%       - data can be formatted as one large EEGlab structure or you can choose
-%          a set of EEGlab .set files containing chunks of the whole-night data
-%          (use the cfg.loadPaths input to do this)
-%       - splits the data by sleep stage info encoded in the event structure
 % 
-%       inputs:
-%           cfg.stageCodes      = cell array of the event codes which mark the 
-%                                  sleep stages
-%           cfg.stageWin  = [1,2] vector containing window to epoch each stage
-%                                  by (seconds). e.g. if the sleep stages start at the
-%                                  event latency and last 30s, this would be [0,30]
-%                                  - can also be a [nevents, 2] matrix containing different
-%                                    intervals for each sleep-stage event
-%   
-%           !! SHOULD also split ICA decompositions (and assign to real eeglab ICA stuff)
-%               and validation structs nicely if present
-%           !! finish documentation
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
 % 
-%               - Richard Somervail, 22/11/2021
-%                   www.iannettilab.net
-%%   
+%%  
 function [EEG_out_all, EEG_dummy ] = d2d_splitByStage(EEG, cfg)
 
 fprintf('splitting data by sleep stage ...\n')

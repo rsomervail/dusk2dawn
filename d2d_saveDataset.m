@@ -1,9 +1,14 @@
 %
 %   dusk2dawn plugin for EEGlab
 %       - wrapper function for EEGlab to save datasets
-% 
-%           - Richard Somervail, 27/11/2021
 %
+% 
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 function EEG = d2d_saveDataset(EEG,cfg)
 
 % defaults

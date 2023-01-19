@@ -1,14 +1,12 @@
 %
 %   GUI for the wrapper function for the vis_artifacts function in the clean_rawdata plugin for EEGLAB
-%       !!! WRITE DOCUMENTATION
-% 
+%
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
-% 11/07/2022 ver 0.1. Created
+% 19/01/2023 ver 1.0.0 Created
 % 
 %%  
-
 function pop_d2d_vis_artifacts(EEG)
 
 %% get info about EEG data

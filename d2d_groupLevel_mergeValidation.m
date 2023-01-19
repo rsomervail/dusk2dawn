@@ -1,14 +1,14 @@
 % 
 % merge validation metrics at group-level
 % 
-%           inputs:
-%               -
+%
 % 
-%           - !! write documentation
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
 % 
-%               - Richard Somervail, 19/12/2021 
-%                   www.iannettilab.net
-%% 
+%%  
 function cfg = d2d_groupLevel_mergeValidation(cfg)
 
 %% defaults

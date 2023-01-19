@@ -1,14 +1,9 @@
 %
-%
-%       master function with GUI for Dusk2Dawn plugin
-%       !!!! REPLACE EVENT CODE BOXES WITH POPUP MENUS WITH MULTISELECT, SET INITIAL TO THE ONES WHICH i CURRENTLY PLOT IN THE BOX
-%       !! INSERT HELP INFO HERE
-%       !! make advanced options button and subfunction GUI and add some extra stuff like ref_wndlen and stuff
 % 
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
-% 11/07/2022 ver 0.1. Created
+% 19/01/2023 ver 1.0.0 Created
 % 
 %%  
 

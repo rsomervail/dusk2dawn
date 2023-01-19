@@ -5,9 +5,14 @@
 %       inputs:
 %           EEG_all   - a struct array of EEGlab structures containing the separated data for each sleep stage
 %           EEG_dummy - a blank version of the original data used as a template for the re-combination of the seperated stages
+%
 % 
-%               - Richard Somervail, 22/11/2021
-%                   www.iannettilab.net
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 %%
 function EEG_out = d2d_recombineByStage( EEG_all , EEG_dummy  )
 

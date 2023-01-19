@@ -1,11 +1,13 @@
 % 
 % 
-%       todo:
-%           !! if skipping validation then say so with print
-%           !! write documentation
+%
 % 
-%               - Richard Somervail, 22/11/2021
-%                   www.iannettilab.net
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 function [EEG, valid] = d2d_validateCleaning(EEG, cfg)
 
 % defaults - FFT

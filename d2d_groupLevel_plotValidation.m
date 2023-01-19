@@ -3,13 +3,14 @@
 %       plot validation metrics from up to 3 parameter dimensions at a time
 %           inputs:
 %               - cfg.dims2plot = indexes of which parameters will be plotted and how (1st is x-axis, 2nd is subplot rows, 3rd is subplot columns)
-%           - ! make sure all figures match the single subject plot, 
-%           - ! e.g. add the combined computation plot to single sub function
-%           - ! check that the subplot indexing works properly with 3dims (i.e. that it doesn't transpose or something weird)
-%           - ! write documentation
+%
 % 
-%               - Richard Somervail, 22/11/2021 
-%                   www.iannettilab.net
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 function d2d_groupLevel_plotValidation(cfg)
 
 %% defaults

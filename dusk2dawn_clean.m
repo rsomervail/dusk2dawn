@@ -1,17 +1,14 @@
 %  dusk2dawn_clean() - master function which implements dusk2dawn cleaning & validation.
 % 
 % 
-%  todo
-%   ! add defaults in case not passed through GUI (i.e. if CFG is empty or incomplete)
-%   ! documentation
 %
+% 
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
-% 11/07/2022 ver 0.1. Created
+% 19/01/2023 ver 1.0.0 Created
 % 
-% 
-%%
+%%  
 function EEG = dusk2dawn_clean(EEG, cfg)
 
 % first check the data is appropriate for ASR-cleaning

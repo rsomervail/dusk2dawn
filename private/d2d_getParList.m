@@ -3,11 +3,14 @@
 %
 %   takes varied parameter cell array and returns as a string that can be printed nicely in an inputgui GUI
 % 
+%
+% 
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
-% 11/07/2022 ver 0.1. Created
-%%
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 function parlist = d2d_getParList(vals)
 
 

@@ -2,18 +2,16 @@
 % 
 %
 %
-%
-%
+% 
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
-% 11/07/2022 ver 0.1. Created
+% 19/01/2023 ver 1.0.0 Created
 % 
-% 
-%%
+%%  
 function vers = eegplugin_dusk2dawn(fig,try_strings,catch_strings)
 
-vers = '0.1';
+vers = '1.0.0';
 % p = fileparts(which('eegplugin_dusk2dawn'));
 
 % DEFINITIONS

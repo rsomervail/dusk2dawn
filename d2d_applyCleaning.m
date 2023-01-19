@@ -1,13 +1,14 @@
 %
 %       apply ASR cleaning using d2d_applyCleaning
 % 
+%
+% 
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
-% 11/07/2022 ver 0.1. Created
+% 19/01/2023 ver 1.0.0 Created
 % 
 %%  
-
 function EEG = d2d_applyCleaning( varargin )
 
 % get inputs

@@ -1,13 +1,15 @@
 %
 %
-%   - wrapper function for running ICA and PICA in the cleanSleep toolbox
+%   - wrapper function for running ICA in the Dusk2Dawn toolbox
 %
-%       ! determine good algorithm for number of components
-%       ! see if I can exploit the blocksize to speed up computation using recmem function
-%       ! write documentation
 %
-%           - Richard Somervail, 27/11/2021
 % 
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 function [EEG_out, cfg] = d2d_computeICA(EEG, cfg)
 
 % defaults

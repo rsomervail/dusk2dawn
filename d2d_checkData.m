@@ -9,9 +9,14 @@
 %           - checks for interpolated channels  
 % 
 % 
-%               - Richard Somervail, 21/11/2021
-%                   www.iannettilab.net
-%%
+%
+% 
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 function EEG = d2d_checkData(EEG)
 
 tIN = tic;

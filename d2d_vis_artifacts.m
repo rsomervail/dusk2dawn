@@ -1,13 +1,14 @@
 %
 %       wrapper function for the vis_artifacts function in the clean_rawdata plugin for EEGLAB
 % 
+%
+% 
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
-% 11/07/2022 ver 0.1. Created
+% 19/01/2023 ver 1.0.0 Created
 % 
 %%  
-
 function EEG = d2d_vis_artifacts( EEG, cfg )
 
 %% check whether 2 datasets were selected, if no then just assume 0 varied parameters and plot data before/after ASR

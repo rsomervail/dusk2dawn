@@ -1,4 +1,10 @@
-
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
+%%
 %
 %      compute FFT for one vector (e.g. a single channel over time)
 % 

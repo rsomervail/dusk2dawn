@@ -5,12 +5,14 @@
 %       - can calibrate & clean the whole dataset together, or slide through
 %          the dataset in shorter chunks to calibrate according to chunk-specific thresholds
 % 
-%   - ! INCLUDE WINDOW LENGTH AND STEP SIZE PARAMETERS FOR ASR ! i.e. not just ref_ parameters
-%   - ! finish documentation      
 %
-%           - Richard Somervail, 23/11/2021
-%
-%
+% 
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+% History:
+% 19/01/2023 ver 1.0.0 Created
+% 
+%%  
 function [EEG_out, cfg] = d2d_cleanData(EEG, cfg)
 
 % defaults

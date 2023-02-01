@@ -232,10 +232,10 @@ function out = rec_fixOrigVals(in, npars)
        else % otherwise check if field is numerical & a metric which needs to be duplicated, and if so then get all indices corresponding to original data 
 %              and set these to be equal to the original data metric
             if isnumeric(field) && startsWith( flds{f} , 'm_' )
-%                if npars < 3 % ? previously thought this only broke with 3D, maybe it 
-                   
+                
                    % construct indices referring to the element containing the original data value for this metric
-                   indstr_rhs =  [ repmat({'1'},1,npars),  repmat({':'},1,ndims(field)-npars) ];
+                   extraDims = ndims(field)-npars;
+                   indstr_rhs =  [ repmat({'1'},1,npars),  repmat({':'},1, extraDims) ];
                    indstr_rhs = strjoin(indstr_rhs,',');
                    for p = 1:npars
                        % construct indices spanning each corner formed by one parameter dimension and all the other parameters
@@ -244,13 +244,13 @@ function out = rec_fixOrigVals(in, npars)
                        indstr_lhs = strjoin(indstr_lhs,','); 
                        % set those elements of field to be equal to the original data value for this metric
                        eval([ 'sizeNeeded = size(field('  indstr_lhs '));' ]) % get number of copies needed for assignment
-                       copystr  = num2str([ sizeNeeded(1:npars)  ones(1,ndims(field)-npars) ], '%d,'); copystr(end) = [];
-                       eval([ 'field(' indstr_lhs ') = repmat(  field(' indstr_rhs ') , ' copystr  ' ) ;'  ])
+                       if npars == 3 && length(sizeNeeded) == (npars-1) % if last dim is singleton, then size(field(indstr_lhs)), will not have the last "1", so add this back in
+                            sizeNeeded = [sizeNeeded, 1]; %? this happens when there are 3 varied parameters and you reach p = 3
+                       end
+                       copystr  = num2str([ sizeNeeded(1:npars)  ones(1,extraDims) ], '%d,'); copystr(end) = []; % copystr is ones at the end of any extra dims (extra rel. to the varied parameter dimensions)
+                       eval([ 'field(' indstr_lhs ') = repmat(  field(' indstr_rhs ') , ' copystr  ' ) ;'  ])             %  -> because you don't need to copy those dims which are already indexed as ":" by indstr_rhs
                    end % loop through parameters
                    
-%                else % if npars = 3
-%                     % ? if need a special 3D version
-%                end % check num pars
             end % if numeric
        end % if field is structure
        

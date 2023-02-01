@@ -10,3 +10,4 @@ Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB.
 	History:
 	30/01/2023 ver 1.0.1 Patch to fix initial bugs and solidify basic functionality.
 	19/01/2023 ver 1.0.0 Created
+	

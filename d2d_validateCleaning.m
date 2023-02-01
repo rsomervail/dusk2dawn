@@ -1,12 +1,11 @@
 % 
-% 
+%   - computes validation metrics from a dataset processed by Dusk2Dawn
+%       - data can be raw or ASR-cleaned (with D2D)
 %
 % 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function [EEG, valid] = d2d_validateCleaning(EEG, cfg)
 
@@ -85,50 +84,82 @@ else
     
 end
 
-%% compute fast-fourier transform (FFT)  
+%% compute power spectrum
 if cfg.fft.run
-fprintf('d2d_validateCleaning: computing frequency decomposition (FFT) ...\n')
+fprintf('d2d_validateCleaning: computing frequency decomposition (spectopo) ...\n')
 tIN_fft = tic;
 fft = cfg.fft; % get sub-structure
 
-% compute fft
-for c = 1  :EEG.nbchan
-    tempfft = rs_fft(EEG.data(c,:)');
-    if c == 1
-       fft.amp =  nan(size(tempfft,1), size(EEG.chanlocs,2));
-    end
-    fft.amp(:,c) = tempfft;
-%     disp(c)
-end; clear tempfft
-fft.amp = fft.amp';
-fstep = 1/  ((1/EEG.srate)*EEG.pnts); 
-fft.freqs = 0  : fstep : (size(fft.amp,2)-1) * fstep; % construct frequency vector
-
-% smooth
-smoothLen =  0.5 / fstep; % how many steps needed to smooth at X Hz ?
-if smoothLen > 1
-    fft.amp = movmean(fft.amp, smoothLen, 2, 'Endpoints','fill' ); % mov mean to smooth before downsampling
+% compute spectrum
+ents = EEG.event; ents(~strcmp({ents.type},'boundary')) = []; % find boundaries in data e.g. from splitByStage
+bounds = [ents.latency];
+if ~isempty(bounds)
+    [fft.db,fft.freqs,~,~,~] = pop_spectopo(EEG, 1, [], 'EEG', 'plot','off', 'boundaries', bounds );
+else
+    [fft.db,fft.freqs,~,~,~] = pop_spectopo(EEG, 1, [], 'EEG', 'plot','off');
 end
-
-% downsample  ? bit weird to recompute the downsample factor each time .. maybe just do by a fixed amount somehow
-for ds = 8:-1:1  
-    if mod( length(fft.freqs) , ds ) == 0 % if divisible by this ds factor
-        break
-    end
-end
-endfreq = findnearest(fft.freqs, fft.binFreqs(end,2)); 
-fft.freqs   =  fft.freqs(1,1:ds:endfreq);
-fft.amp     =  fft.amp(:,1:ds:endfreq); 
+fft.amp = sqrt( 10 .^ (fft.db/10) ); % convert from decibels power to amplitude
+fft.amp = fft.amp / length(fft.freqs); % normalise amplitude by N
 fft.amp_avgChan   =  mean(fft.amp);
 
-% bin the FFT means and proportions
-for k = 1:size(fft.binFreqs,1)
-    ind1 = findnearest( fft.freqs , fft.binFreqs(k,1) );
-    ind2 = findnearest( fft.freqs , fft.binFreqs(k,2) );
-    fft.binAmp(:,k) = mean( fft.amp(:, ind1:ind2) ,2 ); % get fft in bins across channels
+% check if every bin can be computed (i.e. if data are sufficiently sampled)
+maxFreq = max(fft.freqs,[],'all');
+if maxFreq < max(fft.binFreqs,[],'all')
+    warning([mfilename ': data sampling rate is too low for some of the requested frequency bands' ])
 end
-fft.binAmp_avgChan = mean(fft.binAmp(:,:));
 
+% bin the FFT means and proportions
+nbands = size(fft.binFreqs,1);
+fft.binAmp = nan(EEG.nbchan,nbands);
+for k = 1 : nbands
+    f1 = fft.binFreqs(k,1); f2 = fft.binFreqs(k,2);
+    if f2 <= maxFreq
+        ind1 = findnearest( fft.freqs , f1 );
+        ind2 = findnearest( fft.freqs , f2);
+        fft.binAmp(:,k) = mean( fft.amp(:, ind1:ind2) ,2 ); % get amp in bins across channels
+    end
+end
+fft.binAmp_avgChan = mean(fft.binAmp);
+
+
+%  OLD (custom fft function)
+% % compute spectrum
+% for c = 1  :EEG.nbchan
+%     tempfft = rs_fft(EEG.data(c,:)');
+%     if c == 1
+%        fft.amp =  nan(size(tempfft,1), size(EEG.chanlocs,2));
+%     end
+%     fft.amp(:,c) = tempfft;
+% %     disp(c)
+% end; clear tempfft
+% fft.amp = fft.amp';
+% fstep = 1/  ((1/EEG.srate)*EEG.pnts); 
+% fft.freqs = 0  : fstep : (size(fft.amp,2)-1) * fstep; % construct frequency vector
+% 
+% % smooth
+% smoothLen =  0.5 / fstep; % how many steps needed to smooth at X Hz ?
+% if smoothLen > 1
+%     fft.amp = movmean(fft.amp, smoothLen, 2, 'Endpoints','fill' ); % mov mean to smooth before downsampling
+% end
+% 
+% % downsample  ? bit weird to recompute the downsample factor each time .. maybe just do by a fixed amount somehow
+% for ds = 8:-1:1  
+%     if mod( length(fft.freqs) , ds ) == 0 % if divisible by this ds factor
+%         break
+%     end
+% end
+% endfreq = findnearest(fft.freqs, fft.binFreqs(end,2)); 
+% fft.freqs   =  fft.freqs(1,1:ds:endfreq);
+% fft.amp     =  fft.amp(:,1:ds:endfreq); 
+% fft.amp_avgChan   =  mean(fft.amp);
+
+% % bin the FFT means and proportions
+% for k = 1:size(fft.binFreqs,1)
+%     ind1 = findnearest( fft.freqs , fft.binFreqs(k,1) );
+%     ind2 = findnearest( fft.freqs , fft.binFreqs(k,2) );
+%     fft.binAmp(:,k) = mean( fft.amp(:, ind1:ind2) ,2 ); % get fft in bins across channels
+% end
+% fft.binAmp_avgChan = mean(fft.binAmp(:,:));
 % % remove continuous mean FFT across channels if not requested
 % if ~fft.storeWholeFFT
 %     fft.freqs        = nan;
@@ -150,7 +181,7 @@ sw = cfg.sw; % get sub-structure
 % get slow-waves either from cfg parameters or automatically 
 if cfg.sw.autoFind
     fprintf('d2d_validateCleaning: automatically finding slow-wave events using default function (swalldetectnew) ...\n')
-    EEG = d2d_detectSlowWaves(EEG, sw.autoFind_chan, sw.autoFind_ampThresh);
+    EEG = d2d_detectSlowWaves(EEG, sw.chan, sw.ampThresh);
     sw.codes = {'SW_neg'};
 else
     fprintf('d2d_validateCleaning: using user-supplied slow-wave events for validation ...\n')
@@ -162,7 +193,7 @@ if  ~any(   contains( {EEG.event.type},  sw.codes  ) )
 end 
 
 % extract slow-wave epochs to compute sw metrics  
-EEG_sw  = pop_select(EEG,'channel' , sw.autoFind_chan );  
+EEG_sw  = pop_select(EEG,'channel' , sw.chan );  
 EEG_sw  = pop_epoch(EEG_sw, sw.codes  , sw.peakwin);
 sw.waves = squeeze( EEG_sw.data )';   %  figure; plot(EEG_sw.times/1000, mean(sw.waves))
 [~,~,~,temp] = ttest( sw.waves );  % figure; plot(EEG_sw.times/1000, sw_tval)

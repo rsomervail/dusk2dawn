@@ -1,12 +1,10 @@
 %
-%   GUI for plotValidation which plots the validation metrics across ASR parameters
+%   GUI for plotValidation which plots the previously computed validation metrics across ASR parameter sets
 %
 % 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 
 function pop_d2d_plotValidation(EEG)
@@ -15,7 +13,9 @@ function pop_d2d_plotValidation(EEG)
 if ~isfield(EEG.etc, 'dusk2dawn')
     errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean the data before running this function' ...
         ,'Error: Dataset has not been cleaned with Dusk2dawn');
+    return
 end
+
 cfg = EEG.etc.dusk2dawn.cfg;
 pars = cfg.pars; npars = length(pars.labels);
 
@@ -109,6 +109,10 @@ if npars > 0
     [ tmp1 tmp2 strhalt cfg ] = inputgui( 'geometry',geometry,'uilist',uilist, 'geomvert',vert, ...
        'helpcom','pophelp(''pop_d2d_plotValidation'');','title','Plot effects of ASR on various validation metrics -- pop_d2d_plotValidation()');
      
+    % return if cancelled
+    if ~strcmp(strhalt,'retuninginputui') 
+        return
+    end
     
     %% extract inputs to d2d_plotValidation from cfg
     

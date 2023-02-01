@@ -1,13 +1,9 @@
 %
-%       wrapper function for the vis_artifacts function in the clean_rawdata plugin for EEGLAB
+%    - Wrapper function for the vis_artifacts function in the clean_rawdata plugin for EEGLAB
 % 
-%
-% 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function EEG = d2d_vis_artifacts( EEG, cfg )
 
@@ -17,12 +13,12 @@ if isempty(cfg)
     % EEG plotted in red
     ctemp = [];
     ctemp.loadRaw = true;
-    EEG_red = d2d_applyCleaning(EEG,ctemp);
+    EEG_red = d2d_loadData(EEG,ctemp);
 
     % EEG plotted in blue
     ctemp = [];
     ctemp.loadRaw = false;
-    EEG_blue = d2d_applyCleaning(EEG,ctemp);
+    EEG_blue = d2d_loadData(EEG,ctemp);
 
 %% else load 2 datasets specified by the cfg selections
 else
@@ -33,7 +29,7 @@ else
     for k = 1:length(flds) % get parameters needed to load dataset
         ctemp.( strrep(flds{k},'selL','sel') ) = cfg.(flds{k}); % rename field so that lower level function recognises the inputs
     end
-    EEG_red = d2d_applyCleaning(EEG,ctemp);
+    EEG_red = d2d_loadData(EEG,ctemp);
     
     % EEG plotted in blue
     ctemp = [];
@@ -42,7 +38,7 @@ else
         ctemp.( strrep(flds{k},'selR','sel') ) = cfg.(flds{k}); % rename field so that lower level function recognises the inputs
     end
     ctemp.loadRaw = false;
-    EEG_blue = d2d_applyCleaning(EEG,ctemp);
+    EEG_blue = d2d_loadData(EEG,ctemp);
 
 end
 

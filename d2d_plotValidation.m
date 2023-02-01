@@ -6,11 +6,9 @@
 % 
 %
 % 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function d2d_plotValidation(EEG, cfg)
 
@@ -102,15 +100,15 @@ nparr = length(parr_val);
 nparx = length(parx_val);
 
 %% Loop through any selected sleep stages
-if ~isfield(cfg,'stages')
-    cfg.stages = 1;
+if ~EEG.etc.dusk2dawn.cfg.splitByStage
+    stageCodes = 1;
     nstages = 1;
 else
     stageCodes = [EEG.etc.dusk2dawn.valid_merged(:).stage];
     nstages = length(stageCodes);
 end
 
-for st = cfg.stages
+for st = 1:nstages
 
     %% Initialise all figures
 
@@ -124,7 +122,7 @@ for st = cfg.stages
     % cleanData
     if cfg.plot_asr
         fig_cleanData(st)       = figure('name',[ figprefix 'how much variance did ASR remove?'], 'numbertitle','off');
-        fig_calibData(st)       = figure('name',[ figprefix  'how much data did ASR have to calibrate with?'], 'numbertitle','off');
+        fig_calibData(st)       = figure('name',[ figprefix  'how much data did ASR have for calibration?'], 'numbertitle','off');
     end
     % fft
     if isfield(v,'fft') && cfg.plot_fft
@@ -193,7 +191,7 @@ for st = cfg.stages
         case 2
             subplot_title = [parc_lab ': ' parc_val{dimc_range(c)}  ];
         case 3
-            subplot_title = [parc_lab ': ' parc_val{dimc_range(c)} '\t' parr_lab ': ' parr_val{dimr_range(r)+1}   ];
+            subplot_title = [parc_lab ': ' parc_val{dimc_range(c)} '   ' parr_lab ': ' parr_val{dimr_range(r)}   ];
     end
     
     %% PLOT - ASR cleaning metrics

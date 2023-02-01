@@ -1,10 +1,11 @@
-%
 % 
+%  - split data by sleep stage 
+%       - segments of each stage will be concatenated as continuous data, rather than epoched
+% 
+% 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function [EEG_out_all, EEG_dummy ] = d2d_splitByStage(EEG, cfg)
 
@@ -140,14 +141,15 @@ if ~isfield(cfg,'cleanUnscored'), cfg.cleanUnscored = true; end
         else % if this stage corresponds to the remaining "unscored" segments 
             indy2take = ~indy2take_all;            
         end 
-        
+
         % extract data from this sleep stage
         evalc([ ' EEG_out = eeg_eegrej(EEG, logical2indices(~indy2take) ); ']); % negate because function rejects timewindows
         
         % store info about this stage
-        EEG_out.etc.dusk2dawn.stageSplit.indy = indy2take;
+        EEG_out.etc.dusk2dawn.stageSplit.indy_wholeData = indy2take; % indy of each sample for this stage in whole dataset
+            ents = EEG_out.event; ents(~strcmp({ents.type},'boundary')) = [];
+        EEG_out.etc.dusk2dawn.stageSplit.bounds = [ents.latency]; % store discontinuities in resulting data after split, for alter recombination
         EEG_out.etc.dusk2dawn.stageSplit.thisStage  = st;
-        EEG_out.etc.dusk2dawn.stageSplit.stageCodes = cfg.stageCodes;
         EEG_out.setname = [EEG_out.setname '_' cfg.stageCodes{st} ];
         
         % save dataset in specified path (if cfg.saveStagesToDisk == true)
@@ -181,6 +183,9 @@ if ~isfield(cfg,'cleanUnscored'), cfg.cleanUnscored = true; end
     
         st = st + 1;
     end % end stage loop 
+    for st = 1:nstages
+        EEG_out_all(st).etc.dusk2dawn.stageSplit.stageCodes = cfg.stageCodes;
+    end
     
 % end % end if load chunks 
 toc(tIN)

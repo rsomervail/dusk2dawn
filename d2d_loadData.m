@@ -1,15 +1,13 @@
 %
-%       apply ASR cleaning using d2d_applyCleaning
+%       load a version of the current dataset that has been processed with Dusk2Dawn
+%           - e.g. apply ASR cleaning with a particular set of parameters
+%              or revert back to the raw data
 % 
-%
-% 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
-function EEG = d2d_applyCleaning( varargin )
+function EEG = d2d_loadData( varargin )
 
 % get inputs
 EEG = varargin{1};
@@ -24,20 +22,21 @@ end
 % defaults 
 if ~isfield(cfg,'loadRaw'), cfg.loadRaw = false; end
 
-% get raw data filename & clean filenames for later
+% get dataset filenames and paths
+savePath = EEG.etc.dusk2dawn.cfg.savePath;
 origFile = strrep(EEG.etc.dusk2dawn.cfg.origFile,'.set','');
 cleanFiles = EEG.etc.dusk2dawn.cfg.cleanFiles;
 
 % load either raw data or a cleaned file
 if cfg.loadRaw
 
-    fprintf('dusk2dawn: applying ASR cleaning; load raw data ...\n')
+    fprintf('d2d_loadData: loading raw data from disk ...\n')
     file2load = origFile;
 
 else % if loading cleaned data
     
     % find clean file
-    fprintf('dusk2dawn: applying ASR cleaning; previously-cleaned dataset will be loaded from disk ...\n')
+    fprintf('d2d_loadData: loading a previously-cleaned dataset from disk ...\n')
     if isfield(cfg,'sel_par_1')
         load1 = [ '_p1-' num2str(cfg.sel_par_1,'%02d') ];
     else
@@ -58,8 +57,8 @@ else % if loading cleaned data
 end % if loadRaw
 
 % load dataset
-fprintf('dusk2dawn: loading dataset : %s.set ...\n', file2load )
-EEG = pop_loadset( 'filepath',EEG.filepath,'filename', [file2load '.set'] );
+fprintf('d2d_loadData: dataset = %s.set ...\n', file2load )
+EEG = pop_loadset( 'filepath', savePath,'filename', [file2load '.set'] );
 
 % double-check that data has requested parameter values
 if ~cfg.loadRaw

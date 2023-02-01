@@ -1,22 +1,19 @@
 %
-%   dusk2dawn plugin for EEGlab
-%       - wrapper function for EEGlab to save datasets
-%
-% 
+%  - Saves EEG data processed by Dusk2Dawn, can either save whole dataset or just update the header.
+%  
+%  
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function EEG = d2d_saveDataset(EEG,cfg)
 
 % defaults
-if ~isfield(cfg,'saveFlag'), cfg.saveFlag = true; end
+if ~isfield(cfg,'saveFlag'),   cfg.saveFlag   = true;  end
 if ~isfield(cfg,'headerOnly'), cfg.headerOnly = false; end
 
 % process inputs
-EEG.setname  = strrep( cfg.saveName, '.set','' );
+EEG.setname  = strrep( cfg.saveName, '.set','' ); % ? may be unnecessary as setname should not contain file extension
 EEG.filename = [EEG.setname '.set']; 
 EEG.filepath = cfg.savePath;
 

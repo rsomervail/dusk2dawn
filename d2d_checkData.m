@@ -9,13 +9,9 @@
 %           - checks for interpolated channels  
 % 
 % 
-%
-% 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function EEG = d2d_checkData(EEG)
 
@@ -80,6 +76,12 @@ end
 % check for interpolated channels
 if contains( EEG.history , 'pop_interp' )
     error 'Error: data contains interpolated channels -> avoid interpolating channels until after ASR'
+end
+
+% check for a previous runthrough of D2D
+if isfield(EEG.etc,'dusk2dawn')
+    EEG.etc = rmfield( EEG.etc, 'dusk2dawn' );
+    warning([mfilename ': this dataset has previously been processed with Dusk2Dawn, removing previous runthrough']);
 end
 
 toc(tIN)

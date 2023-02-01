@@ -2,16 +2,17 @@
 % 
 %
 %
-% 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
+% 30/01/2023 ver 1.0.1 Patch to fix initial bugs and solidify basic functionality.
 % 19/01/2023 ver 1.0.0 Created
 % 
 %%  
 function vers = eegplugin_dusk2dawn(fig,try_strings,catch_strings)
 
-vers = '1.0.0';
+vers = '1.0.1';
 % p = fileparts(which('eegplugin_dusk2dawn'));
 
 % DEFINITIONS
@@ -32,7 +33,7 @@ submenu = uimenu(menuFolder, 'text', 'Dusk2Dawn - Clean raw data using ASR & val
 %     'userdata' , 'startup:off;continuous:off;epoch:off;study:off;erpset:off');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     pop_dusk2dawn
-cmd = [ '[EEG] = pop_dusk2dawn(EEG);' overwrite ];
+cmd = [ 'pop_dusk2dawn;' ];
 uimenu( submenu, 'text', ...
     'Dusk2Dawn - Run all core functions                       (pop_dusk2dawn)', 'userdata', 'startup:off;epoch:off;study:on', ...
     'callback', cmd, 'Separator', 0, 'ForegroundColor', titleCol);
@@ -69,9 +70,9 @@ uimenu( submenu, 'text', '- SUBFUNCTIONS -', 'Separator', 1,...
 ident = [ident ident]; % space before text
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % pop_d2d_applyCleaning 
-cmd = ['EEG = pop_d2d_applyCleaning(EEG);' overwrite];
+cmd = ['EEG = pop_d2d_loadData(EEG);' overwrite];
 uimenu( submenu, 'text', ...
-    [ident '- Apply ASR cleaning to data                            (pop_d2d_applyCleaning)'], 'userdata', 'startup:off;epoch:off;study:on', ...
+    [ident '- Apply ASR cleaning / Revert to raw data         (pop_d2d_loadData)'], 'userdata', 'startup:off;epoch:off;study:on', ...
     'callback', cmd, 'Separator', 1);
 
 % pop_d2d_vis_artifacts(EEG) 

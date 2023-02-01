@@ -1,11 +1,9 @@
 %
 %   GUI for the wrapper function for the vis_artifacts function in the clean_rawdata plugin for EEGLAB
 %
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function pop_d2d_vis_artifacts(EEG)
 
@@ -13,7 +11,9 @@ function pop_d2d_vis_artifacts(EEG)
 if ~isfield(EEG.etc, 'dusk2dawn')
     errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean the data before running this function' ...
         ,'Error: Dataset has not been cleaned with Dusk2dawn');
+    return
 end
+
 cfg = EEG.etc.dusk2dawn.cfg;
 pars = cfg.pars; npars = length(pars.labels);
 
@@ -92,6 +92,11 @@ if npars > 0
     [ tmp1 tmp2 strhalt cfg ] = inputgui( geometry, uilist, ...
        ['pophelp(''' mfilename ''');'], ['Superimpose the same dataset before/after ASR cleaning -- ' mfilename '()']);
      
+    % return if cancelled
+    if ~strcmp(strhalt,'retuninginputui') 
+        return
+    end
+
     %% GUI outputs
     % subtract the initial blank space from each selection
     flds = fields(cfg);

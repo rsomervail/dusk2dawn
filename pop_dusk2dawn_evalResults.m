@@ -1,10 +1,19 @@
 %
+%   Usage:
+%     >> EEG = pop_dusk2dawn_evalResults(EEG);
 %
+%   - After the data has been cleaned using ASR with the select set(s) of parameters 
+%     (using 'pop_dusk2dawn_clean'), you can visualise the data before & after ASR, 
+%     and plot the computed validation metrics.
 % 
+%   - Once you are happy with your ASR parameters this function will then either:
+%      -> load the clean data with the selected ASR parameters (click "OK") 
+%      -> or revert back to the raw data (click "CANCEL").
+%
+%
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
 % 
 %%  
 
@@ -14,7 +23,9 @@ function EEG = pop_dusk2dawn_evalResults(EEG)
 if ~isfield(EEG.etc, 'dusk2dawn')
     errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean the data before running this function' ...
         ,'Error: Dataset has not been cleaned with Dusk2dawn');
+    return
 end
+
 cfg = EEG.etc.dusk2dawn.cfg;
 pars = cfg.pars; npars = length(pars.labels);
 
@@ -25,11 +36,13 @@ if npars == 0, npars_str = 'no'; else, npars_str = num2str(npars); end
     titleText{1} = ['This dataset has been cleaned using Dusk2Dawn ' sprintf( 'with %s varied parameter%s.', npars_str, plural)];
     titleText{2} = 'You can now explore the effects of ASR on your data using the functions below.';
 if npars > 0
-    titleText{3} = 'Finally, click "OK" to apply ASR with the selected parameters (you can always return to this screen later)';
+    titleText{3} = 'Finally, click "OK" to apply ASR with the selected parameters';
 else
-    titleText{3} = 'Finally, click "OK" to apply ASR (you can always return to this screen later)';
+    titleText{3} = 'Finally, click "OK" to apply ASR ';
 end
+titleText{4} = 'or click "CANCEL" to exit without applying the ASR (you can always return to this screen later)';
 geo_titleText = { ...
+    1 ...
     1 ...
     1 ...
     1 ...
@@ -40,6 +53,7 @@ ui_titleText = { ...
     {} ...
     { 'Style', 'text', 'string', titleText{2}, 'fontweight', 'bold' } ...
     { 'Style', 'text', 'string', titleText{3}, 'fontweight', 'bold' } ...
+    { 'Style', 'text', 'string', titleText{4}, 'fontweight', 'bold' } ...
 }; 
 
 %% function call buttons
@@ -49,7 +63,7 @@ geo_funCalls = { ...
     [1 3] ...
 };
 ui_funCalls = { ...
-    { 'Style','pushbutton', 'string','Plot Data', 'callback','pop_d2d_vis_artifacts(EEG)' } ... % ! will need to give it chanlist and such
+    { 'Style','pushbutton', 'string','Plot Data', 'callback','pop_d2d_vis_artifacts(EEG)' } ... 
         { 'Style', 'text', 'string', ' --> Visualise data to compare before/after ASR using vis_artifacts() function' } ...
     {} ...
     { 'Style','pushbutton', 'string','Plot Validation Metrics', 'callback','pop_d2d_plotValidation(EEG)' } ...
@@ -63,7 +77,7 @@ ui_funCalls = { ...
 
 %% Define GUI elements - choose pars to apply ASR with if any were varied
 if npars > 0
-    ui_choosePars(1) = {{ 'Style', 'text', 'string', 'Choose which ASR parameters to apply to your data:', 'fontweight', 'bold' }};
+    ui_choosePars(1) = {{ 'Style', 'text', 'string', 'Choose which set of ASR parameters to apply to your data:', 'fontweight', 'bold' }};
     geo_choosePars = {1};
     for p = 1:3
         if npars >= p
@@ -106,11 +120,15 @@ uilist = [         ...
 ];
 
 %% create GUI
-[ tmp1 tmp2 strhalt cfg ] = inputgui( geometry, uilist, ...
-   'pophelp(''pop_dusk2dawn_evaluateResults'');', 'Evaluate the results of cleaning -- pop_dusk2dawn_evaluateResults()');
- 
-%% call apply ASR cleaning on OK click
-EEG = d2d_applyCleaning(EEG,cfg);
 
+[ ~,~, strhalt, cfg ] = inputgui( 'geometry', geometry, 'uilist',uilist, ...
+    'title', 'Evaluate results & apply cleaning -- pop_dusk2dawn_evalResults()', ...
+   'helpcom','pophelp(''pop_dusk2dawn_evalResults'');' );
+
+ 
+%% either apply ASR or exit without applying depending on whether click OK or CANCEL
+if strcmp(strhalt,'retuninginputui')
+    EEG = d2d_loadData(EEG,cfg);
+end
 
 end

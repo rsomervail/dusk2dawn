@@ -1,11 +1,9 @@
 % 
-%
+%   - Merges the results of post-cleaning validation across runs and raw data
 % 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function [valid_merged] = d2d_validateMerge( cfg )
 fprintf('merging validation metrics across ASR parameters ...\n')
@@ -231,11 +229,11 @@ function out = rec_fixOrigVals(in, npars)
        if isstruct(field)
            field = rec_fixOrigVals(field, npars);
            out.(flds{f}) = field;
-       else % otherwise check if field is a mat, and if so then get all indices corresponding to original data 
+       else % otherwise check if field is numerical & a metric which needs to be duplicated, and if so then get all indices corresponding to original data 
 %              and set these to be equal to the original data metric
-
-           if npars < 3 % this only seems to work in 1/2D ? 
-               if isnumeric(field) && startsWith( flds{f} , 'm_' )
+            if isnumeric(field) && startsWith( flds{f} , 'm_' )
+%                if npars < 3 % ? previously thought this only broke with 3D, maybe it 
+                   
                    % construct indices referring to the element containing the original data value for this metric
                    indstr_rhs =  [ repmat({'1'},1,npars),  repmat({':'},1,ndims(field)-npars) ];
                    indstr_rhs = strjoin(indstr_rhs,',');
@@ -248,13 +246,12 @@ function out = rec_fixOrigVals(in, npars)
                        eval([ 'sizeNeeded = size(field('  indstr_lhs '));' ]) % get number of copies needed for assignment
                        copystr  = num2str([ sizeNeeded(1:npars)  ones(1,ndims(field)-npars) ], '%d,'); copystr(end) = [];
                        eval([ 'field(' indstr_lhs ') = repmat(  field(' indstr_rhs ') , ' copystr  ' ) ;'  ])
-                       
                    end % loop through parameters
-               end % if numeric   
-           else % if npars = 3
-
-           end
-
+                   
+%                else % if npars = 3
+%                     % ? if need a special 3D version
+%                end % check num pars
+            end % if numeric
        end % if field is structure
        
        % set field

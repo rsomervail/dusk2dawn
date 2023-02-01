@@ -1,13 +1,15 @@
-%  dusk2dawn_clean() - master function which implements dusk2dawn cleaning & validation.
+%  
+%   Usage: 
+%     -> call this function via the GUI: pop_dusk2dawn_clean(EEG)
+%  
+%   Clean dataset with 1 or more sets of ASR parameters & compute validation metrics
+%   (note that output EEG structure is the raw data, and cleaned data must be loaded 
+%    with d2d_loadData)
 % 
 % 
-%
-% 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function EEG = dusk2dawn_clean(EEG, cfg)
 
@@ -52,11 +54,12 @@ for p = 1:npars
     vals = [vals{:}]; % arrange into array to allow sorting
     if any( strcmp(label, {'asr_cutoff','ref_maxbadchannels'}) )
         [~,sortIndy] = sort( vals ,'descend'); 
-        pars.values{p} = pars.values{p}(sortIndy);
     elseif strcmp(label, {'ref_tolerances'})  % assuming ref_tolerances are 2x1 cells
         [~,sortIndy] = sort( range(vals) ,'descend'); 
-        pars.values{p} = pars.values{p}(sortIndy);
+    else
+        [~,sortIndy] = sort( vals ,'ascend'); 
     end
+    pars.values{p} = pars.values{p}(sortIndy);
 end
 
 % store parameters for later
@@ -114,7 +117,7 @@ end % p3
 %% _________________________________________________________________________________________________________________________
 
 % store all dusk2dawn settings in EEG structure
-cfg.origFile = EEG.filename;
+cfg.origFile = [ strrep( cfg.saveName,'.set','') '.set']; % easier than conditionals
 EEG.etc.dusk2dawn.cfg = cfg;
 
 % split data by stage
@@ -156,7 +159,10 @@ if cfg.splitByStage
     valid_orig = EEG.etc.dusk2dawn.valid;
 
     % save raw dataset
-    d2d_saveDataset(EEG, cfg); 
+    ctemp = [];
+    ctemp.saveName = cfg.saveName;
+    ctemp.savePath = cfg.savePath;
+    EEG = d2d_saveDataset(EEG, cfg); 
     clear EEG % delete afterwards to save memory while dataset is split by stage
 
 else % not splitting by stages
@@ -179,7 +185,10 @@ else % not splitting by stages
     [EEG, valid_orig] = d2d_validateCleaning(EEG, cfg); 
 
     % save raw dataset
-    d2d_saveDataset(EEG, cfg); % keep if not splitting by stage
+    ctemp = [];
+    ctemp.saveName = cfg.saveName;
+    ctemp.savePath = cfg.savePath;
+    EEG = d2d_saveDataset(EEG, ctemp); % keep if not splitting by stage
     
 end % end if split by stages
 
@@ -281,8 +290,9 @@ if cfg.splitByStage
     EEG = d2d_recombineByStage(EEG_stages, EEG_dummy);
 end
 
-% output raw data with validation structure added
+% output raw data with validation structure added  (no need to resave header with this info because its done in the d2d_validateMerge function)
 EEG.etc.dusk2dawn.valid_merged = valid_merged;
+
 
 
 

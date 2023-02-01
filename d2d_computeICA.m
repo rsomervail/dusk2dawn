@@ -4,11 +4,9 @@
 %
 %
 % 
+% Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
-%           www.iannettilab.net
-% History:
-% 19/01/2023 ver 1.0.0 Created
-% 
+%           www.iannettilab.net 
 %%  
 function [EEG_out, cfg] = d2d_computeICA(EEG, cfg)
 

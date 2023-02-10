@@ -61,6 +61,10 @@ end
 misc_valid.chans = {EEG.chanlocs.labels};
 misc_valid.chanlist = cellfun( @(a,b) [ a '_' b ] , strsplit(num2str( [1:EEG.nbchan] )), misc_valid.chans , 'UniformOutput', false);
 
+% get number of chans and sample rate for calc of default ASR window
+misc_asr.nbchan = EEG.nbchan;
+misc_asr.srate = EEG.srate;
+
 %% set defaults
 % handle core function defaults
 sw_autoFind_default = false;
@@ -68,7 +72,7 @@ splitByStage_default = false;
 
 % handle advanced settings defaults
 cfg_valid = advanced_popup_valid([],false, misc_valid); % this returns defaults for the advanced validation options popup
-cfg_asr   = advanced_popup_asr([],false); % this returns defaults for the advanced asr options popup
+cfg_asr   = advanced_popup_asr([],false, misc_asr); % this returns defaults for the advanced asr options popup
 
 %% get relevant events (stages & slow-waves) & set default selections
 if ~isempty(EEG.event)
@@ -106,8 +110,9 @@ vtitle1 = 1;
 v0 = 0.2; % empty line height - very small
 v1 = 0.5; % empty line height - small
 v2 = 0.8; % empty line height - big
-veditbox = 1.2; % edit box height
-vbutton = 1.2; % button height
+veditbox1 = 1; % edit box height
+veditbox2 = 1.2; % edit box height
+vbutton = 1; % button height
 
 %% DEFINE GUI ELEMENTS - LINE __________
 linelen   = 140;
@@ -130,8 +135,8 @@ vert_general = [ ...
     1   ... % WELCOME TEXT 2
     1   ... % WELCOME TEXT 3
     v1   ... % 
-    veditbox ... % savePath editbox + title
-    veditbox   ... % saveName editbox + title
+    veditbox2 ... % savePath editbox + title
+    veditbox2   ... % saveName editbox + title
 ];
 ui_general = { ...
     { 'Style', 'text', 'string', 'Welcome to Dusk2Dawn!', 'fontweight', 'bold','fontsize',13, 'horizontalalignment', 'Center' } ...
@@ -156,7 +161,7 @@ geo_asr_params = { ...
 vert_asr_params = [ ...
     vtitle1 ... % ASR OPTIONS
     0.2 ... %
-    veditbox ... % asr cutoff title
+    veditbox1 ... % asr cutoff title
     v2 ... % help text
 ];
 ui_asr_params = { ...
@@ -184,11 +189,11 @@ vert_d2d = [ ...
     v1 ...
     length(ents) ... % stage codes listbox + instruction
     v2 ...
-    veditbox ... % stage window editbox + instruction
+    veditbox1 ... % stage window editbox + instruction
     1 ... 
     1 ... % run ASR in a sliding window?
     0.2 ...
-    veditbox ... % sliding window length editbox + instruction
+    veditbox1 ... % sliding window length editbox + instruction
 ];
 ui_d2d = { ...
     { 'Style', 'checkbox', 'string' ' (1) Split data by sleep stage before ASR cleaning?' 'fontweight', 'bold' 'value' splitByStage_default 'tag' 'splitByStage' } ...
@@ -210,7 +215,7 @@ ui_d2d = { ...
 
 %% DEFINE GUI ELEMENTS - ADVANCED ASR/D2D SETTINGS
 
-cmd = [ ' '' cfg_asr = advanced_popup_asr(cfg_asr,true); '' ' ];
+cmd = [ ' '' cfg_asr = advanced_popup_asr(cfg_asr,true, misc_asr); '' ' ];
 callback = [' evalin(''caller'', ' cmd ' )   '];
 geo_adv_asr =  { ...
     button_len ...
@@ -365,6 +370,7 @@ evalc([ 'cfg.ref_maxbadchannels = ' cfg.ref_maxbadchannels ]);
 cfg.ref_maxbadchannels  = cfg.ref_maxbadchannels / 100; % convert MaxBadChannels to proportions for clean_windows function
 evalc([ 'cfg.ref_tolerances = ' cfg.ref_tolerances ]);
 evalc([ 'cfg.asr_cutoff = ' cfg.asr_cutoff ]);   %#ok<*EVLEQ> 
+evalc([ 'cfg.asr_windowlength = ' cfg.asr_windowlength ]);   %#ok<*EVLEQ> 
 
 % validation settings - fft
 cfg.fft.run = cfg.fft_run; cfg = rmfield(cfg,'fft_run');

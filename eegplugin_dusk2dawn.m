@@ -12,7 +12,7 @@
 %%  
 function vers = eegplugin_dusk2dawn(fig,try_strings,catch_strings)
 
-vers = '1.0.1';
+vers = '1.1.0';
 % p = fileparts(which('eegplugin_dusk2dawn'));
 
 % DEFINITIONS

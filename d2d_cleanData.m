@@ -24,6 +24,7 @@ if ~isfield(cfg,'ref_maxbadchannels'),   cfg.ref_maxbadchannels   = false; end
 if ~isfield(cfg,'ref_tolerances'),   cfg.ref_tolerances   = false; end
 if ~isfield(cfg,'ref_wndlen'),   cfg.ref_wndlen   = []; end
 if ~isfield(cfg,'asr_useRiemmanian'),   cfg.asr_useRiemmanian   = false; end
+if ~isfield(cfg,'asr_windowlength'),   cfg.asr_windowlength   = []; end
 if ~isfield(cfg,'asr_maxdims'),   cfg.asr_maxdims   = 2/3; end
 if ~isfield(cfg,'asr_useGPU'),   cfg.asr_useGPU   = false; end
 if ~isfield(cfg,'asr_MaxMem')   
@@ -108,8 +109,8 @@ if cfg.splitBySlidingWindow
         cfgout.calibDataLen(ch)    = calibLen; 
         cfgout.calibDataMask{ch}   = calibMask;
 
-        %% run ASR cleaning 
-        EEG_chunk_cleaned = clean_asr( EEG_chunk, cfg.asr_cutoff, [],[],cfg.asr_maxdims,     ...
+        %% run ASR cleaning <----------------------------------------------------------------
+        EEG_chunk_cleaned = clean_asr( EEG_chunk, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
                    ref_section,[],[], cfg.asr_useGPU , cfg.asr_useRiemmanian, cfg.asr_MaxMem ); 
         
         %% insert chunk into output data structure
@@ -201,10 +202,10 @@ else
     cfgout.calibDataLen    = calibLen; 
     cfgout.calibDataMask   = calibMask;
 
-    %% run ASR cleaning 
+    %% run ASR cleaning <----------------------------------------------------------------
     fprintf('running ASR cleaning ...\n')
     tin_asr = tic;
-        EEG_out = clean_asr( EEG, cfg.asr_cutoff, [],[],cfg.asr_maxdims,     ...
+        EEG_out = clean_asr( EEG, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
                        ref_section,[],[], cfg.asr_useGPU , cfg.asr_useRiemmanian, cfg.asr_MaxMem ); 
     cfgout.tElapsed = toc(tin_asr);
     fprintf( '... cleaning completed in %.2f mins\n\n', cfgout.tElapsed/60 ) 

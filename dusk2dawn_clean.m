@@ -370,6 +370,8 @@ end % loop through datasets
 EEG = EEG_all; % rename to EEG so it can be passed back out to master function
 
 % merge results of validation across the group
-EEG = d2d_group_validateMerge(EEG);
+if nfiles > 1
+    EEG = d2d_group_validateMerge(EEG);
+end
 
 end % function

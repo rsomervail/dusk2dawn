@@ -28,11 +28,11 @@ if ~isfield(cfg,'asr_windowlength'),   cfg.asr_windowlength   = []; end
 if ~isfield(cfg,'asr_maxdims'),   cfg.asr_maxdims   = 2/3; end
 if ~isfield(cfg,'asr_useGPU'),   cfg.asr_useGPU   = false; end
 if ~isfield(cfg,'asr_MaxMem')   
-    try 
-        cfg.asr_MaxMem   = d2d_recMaxMem(cfg.asr_useGPU); 
-    catch
+%     try 
+%         cfg.asr_MaxMem   = d2d_recMaxMem(cfg.asr_useGPU); 
+%     catch
         cfg.asr_MaxMem = [];
-    end
+%     end
 end
 
 

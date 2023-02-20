@@ -2,7 +2,7 @@
 %   Usage:
 %     >> EEG = pop_dusk2dawn_evalResults(EEG);
 %
-%   - After the data has been cleaned using ASR with the select set(s) of parameters 
+%   - After the data have been cleaned using ASR with the select set(s) of parameters 
 %     (using 'pop_dusk2dawn_clean'), you can visualise the data before & after ASR, 
 %     and plot the computed validation metrics.
 % 
@@ -20,20 +20,34 @@
 function EEG = pop_dusk2dawn_evalResults(EEG)
 
 %% get info about EEG data
-if ~isfield(EEG.etc, 'dusk2dawn')
-    errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean the data before running this function' ...
-        ,'Error: Dataset has not been cleaned with Dusk2dawn');
+nfiles = length(EEG);
+if any( arrayfun( @(x) ~isfield(x.etc,'dusk2dawn'), EEG ) )
+    if nfiles == 1
+        errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean the dataset before running this function' ...
+            ,'Error: Dataset has not been cleaned with Dusk2dawn');
+    else
+        errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean all the datasets before running this function' ...
+            ,'Error: One or more datasets have not been cleaned with Dusk2dawn');
+    end
     return
 end
 
-cfg = EEG.etc.dusk2dawn.cfg;
+if nfiles > 1
+    d2d_checkSameRun(EEG);
+end
+
+cfg = EEG(1).etc.dusk2dawn.cfg;
 pars = cfg.pars; npars = length(pars.labels);
 
 %%% Define GUI elements %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% title / help text
 if npars == 1, plural = ''; else, plural = 's'; end
 if npars == 0, npars_str = 'no'; else, npars_str = num2str(npars); end
-    titleText{1} = ['This dataset has been cleaned using Dusk2Dawn ' sprintf( 'with %s varied parameter%s.', npars_str, plural)];
+if nfiles == 1
+    titleText{1} = [ 'This dataset has been cleaned using Dusk2Dawn ' sprintf( 'with %s varied parameter%s.', npars_str, plural)];
+else
+    titleText{1} = ['These datasets have been cleaned using Dusk2Dawn ' sprintf( 'with %s varied parameter%s.', npars_str, plural)];
+end
     titleText{2} = 'You can now explore the effects of ASR on your data using the functions below.';
 if npars > 0
     titleText{3} = 'Finally, click "OK" to apply ASR with the selected parameters';
@@ -128,7 +142,9 @@ uilist = [         ...
  
 %% either apply ASR or exit without applying depending on whether click OK or CANCEL
 if strcmp(strhalt,'retuninginputui')
-    EEG = d2d_loadData(EEG,cfg);
+    for f = 1:nfiles
+        EEG(f) = d2d_loadData(EEG(f),cfg);
+    end
 end
 
 end

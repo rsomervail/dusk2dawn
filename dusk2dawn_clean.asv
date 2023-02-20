@@ -129,8 +129,8 @@ for f = 1:nfiles
     % if data not loaded already, then load the data & store this info so it can be cleared later to preserve memory
     if ischar(EEG.data)
         dataflag = EEG.data;
+%         temp = pop_loadset(EEG); 
         temp = pop_loadset('filepath',EEG.filepath,'filename',EEG.filename);
-%         temp = pop_loadset('eeg',EEG);
         EEG.data = temp.data; clear temp
     else
         dataflag = '';

@@ -9,7 +9,8 @@
 %%  
 function EEG = d2d_loadData( varargin )
 
-% get inputs
+
+%% get inputs
 EEG = varargin{1};
 if nargin == 1
     cfg = [];

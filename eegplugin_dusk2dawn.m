@@ -6,14 +6,18 @@
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
 % History:
+% 20/02/2023 ver 2.0.0 added multiple dataset support
 % 30/01/2023 ver 1.0.1 Patch to fix initial bugs and solidify basic functionality.
 % 19/01/2023 ver 1.0.0 Created
 % 
 %%  
 function vers = eegplugin_dusk2dawn(fig,try_strings,catch_strings)
 
-vers = '1.1.0';
-% p = fileparts(which('eegplugin_dusk2dawn'));
+vers = '2.0.0';
+p = fileparts(which('eegplugin_dusk2dawn'));
+
+% add boundedline subdirectory to matlab path
+addpath(genpath([p filesep 'boundedLine']))
 
 % DEFINITIONS
 overwrite = '[ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); eeglab redraw; ';
@@ -24,7 +28,8 @@ subCol = [49.3, 70.3, 100]/100; % ice blue
 % CREATE SUBMENU
 menuFolder = findobj(fig, 'tag', 'tools');
 submenu = uimenu(menuFolder, 'text', 'Dusk2Dawn - Clean raw data using ASR & validate results of cleaning'...
-    ,'separator',0, 'ForegroundColor', titleCol, 'position', 7);
+    ,'separator',0, 'ForegroundColor', titleCol, 'position', 7 ...
+    , 'userdata', 'startup:off;epoch:off;study:on' );
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% MASTER FUNCTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,7 +91,7 @@ uimenu( submenu, 'text', ...
     'callback', 'pop_d2d_plotValidation(EEG)');
 
 
-% ! split by stage
+% split by stage !!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % final line of free space at the end of the menu

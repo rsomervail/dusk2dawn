@@ -30,12 +30,27 @@
 % for EEGLAB: https://github.com/sccn/clean_rawdata/blob/master/README.md
 %
 % 
-% 
 % ## HOW TO USE ##
 % This function calls both D2D core functions and will first clean the data, and then display
 % a window which lets you plot the data before and after ASR cleaning, as well as plot several 
 % validation metrics, including spectral decomposition of the data, Slow-Wave amplitude & 
 % consistency, and ICA quality.
+% 
+% 
+%   ## Handling multiple datasets in a memory efficient way ##
+%   All functions in Dusk2Dawn can be run with multiple datasets selected so that you can save 
+%   yourself the extra time of manually running everything for each subject.
+% 
+%   However, since whole-night EEG is very memory intensive, to do this you must change your 
+%   EEGLAB preferences so that only one dataset is stored in memory at a time.
+% 
+%   To handle multiple datasets in a memory efficient way:
+% 
+%       (1) Go to EEGLAB -> File -> Preferences, and check the box labelled "If set, keep at 
+%           most one dataset in memory".
+% 
+%       (2) Load multiple datasets and then go to EEGlab -> Datasets -> Select Multiple Datasets, 
+%           before running Dusk2Dawn cleaning & validation functions.
 % 
 % ___________________________________________________________________________________________________________
 % 
@@ -83,8 +98,8 @@
 %   - Once you are happy with your ASR parameters this function will then either:
 %      -> load the clean data with the selected ASR parameters (click "OK") 
 %      -> or revert back to the raw data (click "CANCEL").
-% % 
-% % 
+% 
+%
 % Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net 

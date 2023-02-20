@@ -13,35 +13,31 @@
 function EEG = pop_d2d_loadData(EEG)
 
 %% get info about EEG data
-if ~isfield(EEG.etc, 'dusk2dawn')
-    errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean the data before running this function' ...
-        ,'Error: Dataset has not been cleaned with Dusk2dawn');
+nfiles = length(EEG);
+if any( arrayfun( @(x) ~isfield(x.etc,'dusk2dawn'), EEG ) )
+    if nfiles == 1
+        errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean the dataset before running this function' ...
+            ,'Error: Dataset has not been cleaned with Dusk2dawn');
+    else
+        errordlg2('Please use the master function (pop_dusk2dawn) or core function (1) first to clean all the datasets before running this function' ...
+            ,'Error: One or more datasets have not been cleaned with Dusk2dawn');
+    end
     return
 end
 
 % load varied parameters from dataset
-pars = EEG.etc.dusk2dawn.cfg.pars;
+pars = EEG(1).etc.dusk2dawn.cfg.pars;
 npars = length(pars.labels);
-
-% create GUI
-geometry = { ...
-            1 ... % title
-            1 ...
-            [1 1] ... % par1 
-            1 ...
-            [1 1] ... % par2
-            1 ...
-            [1 1] ... % par3
-            1 ...
-           };
 
 %% if no varied parameters then toggle between clean data and raw data
 if npars == 0
-
-    % toggle between raw and clean data
     cfg = [];
-    cfg.loadRaw = ~EEG.etc.dusk2dawn.valid(1).raw; 
-    EEG = d2d_loadData(EEG, cfg);
+    cfg.loadRaw = ~EEG(1).etc.dusk2dawn.valid(1).raw;
+    for f = 1:nfiles
+
+        % toggle between raw and clean data % if multiple sets then keep them all in line
+        EEG(f) = d2d_loadData(EEG(f), cfg);
+    end
 end
 
 %% define GUI elements - choose ASR parameters
@@ -103,7 +99,9 @@ if npars > 0
     end
 
     % call actual function 
-    EEG = d2d_loadData(EEG, cfg);
+    for f = 1:nfiles
+        EEG(f) = d2d_loadData(EEG(f), cfg);
+    end
 end
 
 

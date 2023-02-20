@@ -143,7 +143,7 @@ if ~isfield(cfg,'cleanUnscored'), cfg.cleanUnscored = true; end
         end 
 
         % extract data from this sleep stage
-        evalc([ ' EEG_out = eeg_eegrej(EEG, logical2indices(~indy2take) ); ']); % negate because function rejects timewindows
+        evalc( ' EEG_out = eeg_eegrej(EEG, logical2indices(~indy2take) ); '); % negate because function rejects timewindows
         
         % store info about this stage
         EEG_out.etc.dusk2dawn.stageSplit.indy_wholeData = indy2take; % indy of each sample for this stage in whole dataset
@@ -152,13 +152,13 @@ if ~isfield(cfg,'cleanUnscored'), cfg.cleanUnscored = true; end
         EEG_out.etc.dusk2dawn.stageSplit.thisStage  = st;
         EEG_out.setname = [EEG_out.setname '_' cfg.stageCodes{st} ];
         
-        % save dataset in specified path (if cfg.saveStagesToDisk == true)
-        if cfg.saveStagesToDisk
-            ctemp = [];
-            ctemp.saveFlag = cfg.saveStagesToDisk;
-            ctemp.savePath = cfg.savePaths{st};
-            EEG_out = d2d_saveDataset(EEG_out,ctemp);
-        end
+%         % save dataset in specified path (if cfg.saveStagesToDisk == true)
+%         if cfg.saveStagesToDisk
+%             ctemp = [];
+%             ctemp.saveFlag = cfg.saveStagesToDisk;
+%             ctemp.savePath = cfg.savePaths{st};
+%             EEG_out = d2d_saveDataset(EEG_out,ctemp);
+%         end
         
         % optionally keep dataset in memory
         if cfg.keepStagesInMemory

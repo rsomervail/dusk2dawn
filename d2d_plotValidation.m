@@ -215,7 +215,7 @@ for st = 1:nstages
     if ~isnan(dimc), indstr{dimc} = num2str(dimc_range(c)+1); end % after these two steps, should be left with one index corresponding to the x axis range
     if ~isnan(dimr), indstr{dimr} = num2str(dimr_range(r)+1); end % +1 because first element of each dim is always original data
     if nfiles == 1
-        indstr = [     strjoin(indstr,',')]; % make into string, first colon refers to dimension of merged datasets
+        indstr =       strjoin(indstr,',');  % make into string, first colon refers to dimension of merged datasets
     else
         indstr = [':,' strjoin(indstr,',')]; % make into string, first colon refers to dimension of merged datasets
     end
@@ -243,6 +243,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on;
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-or'  ); hold on
         end
         ylabel 'computation time (mins)'
@@ -259,6 +260,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
         end
         ylabel '% timepoints altered'
@@ -273,6 +275,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize, 'Color',col_orange ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o','cmap',col_orange  ); hold on
         end
         ylabel '% variance removed'
@@ -292,6 +295,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on;
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), '-', 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
@@ -307,6 +311,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o', 'cmap',[1,0.4,0]  ); hold on
         end
         ylabel '% of cleaning chunks with sufficient calibration data (>=60s)'
@@ -330,6 +335,7 @@ for st = 1:nstages
                 lineh(k) = plot( dimx_range , temp2plot(:,k), '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on;
             end
         else
+            temp2plot = squeeze(temp2plot);
             clear lineh areah
             for k = 1:size(temp2plot,3)
                 [lineh(k), areah(k)] = boundedline( dimx_range, mean(temp2plot(:,:,k)), std(temp2plot(:,:,k)) ,'-o', 'cmap', cols_freqs(k,:)  ); hold on
@@ -352,6 +358,7 @@ for st = 1:nstages
                 lineh(k) = plot( dimx_range , temp2plot(:,k), '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
             end
         else
+            temp2plot = squeeze(temp2plot);
             clear lineh areah
             for k = 1:size(temp2plot,3)
                 [lineh(k), areah(k)] = boundedline( dimx_range, mean(temp2plot(:,:,k)), std(temp2plot(:,:,k)) ,'-o', 'cmap', cols_freqs(k,:)  ); hold on
@@ -377,6 +384,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
@@ -393,6 +401,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
@@ -409,6 +418,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
@@ -425,6 +435,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
@@ -449,6 +460,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-or'  ); hold on
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
@@ -465,6 +477,7 @@ for st = 1:nstages
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
         else
+            temp2plot = squeeze(temp2plot);
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
@@ -486,6 +499,7 @@ for st = 1:nstages
                 lineh(k) = plot( dimx_range , temp2plot(:,k), '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize, 'Color', cols_classProb4(k,:)  ); hold on; % ? perhaps plot solid line only if number of thresholds exceeds 3?
             end
         else
+            temp2plot = squeeze(temp2plot);
             for k = 1:size(temp2plot,3)
                 [lineh(k), areah(k)] = boundedline( dimx_range, mean(temp2plot(:,:,k)), std(temp2plot(:,:,k)) ,'-o', 'cmap', cols_classProb4(k,:)  ); hold on
             end
@@ -507,6 +521,7 @@ for st = 1:nstages
                 lineh(k) = plot( dimx_range , temp2plot(:,k), '-o', 'LineWidth', 1.5, 'MarkerSize', MarkerSize, 'Color', cols_classProb4(k,:) ); hold on; % ? perhaps plot solid line only if number of thresholds exceeds 3?
             end
         else
+            temp2plot = squeeze(temp2plot);
             for k = 1:size(temp2plot,3)
                 [lineh(k), areah(k)] = boundedline( dimx_range, mean(temp2plot(:,:,k)), std(temp2plot(:,:,k)) ,'-o', 'cmap', cols_classProb4(k,:)  ); hold on
             end

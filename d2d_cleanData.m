@@ -11,7 +11,7 @@
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net 
 %%  
-function [EEG_out, cfg] = d2d_cleanData(EEG, cfg)
+function [EEG_out, cfgout] = d2d_cleanData(EEG, cfg)
 
 % defaults
 if ~isfield(cfg,'splitBySlidingWindow'), cfg.splitBySlidingWindow   = false; end
@@ -96,7 +96,7 @@ if cfg.splitBySlidingWindow
         EEG_chunk.data = EEG.data( :, chunks(ch,1):chunks(ch,2) );
 
         %% get calibration data        
-        evalc([ ' [ref_section, calibMask] = clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
+        evalc([ ' [ref_section, ref_mask] = clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
         
         %% check calibration data are an adequate length
         calibLen = size(ref_section.times,2) / ref_section.srate; % compute calibration data length in seconds
@@ -107,7 +107,7 @@ if cfg.splitBySlidingWindow
             error('Error: chosen calibration data are shorter than 15 seconds, this is not adequate -> increase chunk length')
         end
         cfgout.calibDataLen(ch)    = calibLen; 
-        cfgout.calibDataMask{ch}   = calibMask;
+        cfgout.calibDataMask{ch}   = ref_mask;
 
         %% run ASR cleaning <----------------------------------------------------------------
         EEG_chunk_cleaned = clean_asr( EEG_chunk, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
@@ -141,12 +141,13 @@ if cfg.splitBySlidingWindow
 else  
     
     %% find initial calibration data  
-    if isfield(cfg,'calibrationData') % check if this has been provided already by the user
-        fprintf('d2d_cleanData: using user specified calibration data\n')
-        ref_section = cfg.calibrationData;
+    if isfield(cfg,'ref_mask') % check if this has been provided already by the user
+        fprintf('d2d_cleanData: using user-specified calibration data\n')
+        ref_mask = cfg.ref_mask; % important to have local variable here so it later gets outputted again
+        evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
     else % if no calibration data is provided by the user
         fprintf('d2d_cleanData: finding data to use for calibration ...\n')
-        evalc([ ' [ref_section, calibMask] = clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
+        evalc([ ' [ref_section, ref_mask] = clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
 
         % if manual check is active, edit the calibration selection
         if cfg.checkCalibManual
@@ -166,7 +167,7 @@ else
             % convert to fieldtrip and plot
             EEG2plot_ft = eeglab2fieldtrip( EEG2plot, 'raw', 'none');
             ctemp = [];
-            ctemp.artfctdef.visual.artifact = logical2indices(~calibMask); % load in the automatically found calibration data
+            ctemp.artfctdef.visual.artifact = logical2indices(~ref_mask); % load in the automatically found calibration data
             ctemp.continuous = 'yes';
             switch cfg.checkCalibManual_plotStyle   % ! add to documentation
                 case 'butterfly'     
@@ -181,14 +182,14 @@ else
             ctemp = ft_databrowser(ctemp, EEG2plot_ft); % plot data and allow user to choose calibration data
             
             % get chosen calibration data
-            calibMask = ~indices2logical( ctemp.artfctdef.visual.artifact, length(calibMask) ); % take the points which are NOT marked as artifacts
-            ref_section = pop_select(EEG, 'point', logical2indices(calibMask)); 
+            ref_mask = ~indices2logical( ctemp.artfctdef.visual.artifact, length(ref_mask) ); % take the points which are NOT marked as artifacts
+            ref_section = pop_select(EEG, 'point', logical2indices(ref_mask)); 
         end
     end % find calibration data
     
     %% generate logical mask of calibration data (if not generated in previous section) (for later validation & analysis)
-    if ~exist('calibMask','var')
-        calibMask = ref_section.etc.clean_sample_mask;
+    if ~exist('ref_mask','var')
+        ref_mask = ref_section.etc.clean_sample_mask;
     end
     
     %% check calibration data are adequate length
@@ -199,8 +200,8 @@ else
     elseif  calibLen < 15
         error('Error: chosen calibration data are shorter than 15 seconds, this is not adequate -> manually check to see if more relatively clean data can be included')
     end
-    cfgout.calibDataLen    = calibLen; 
-    cfgout.calibDataMask   = calibMask;
+    cfgout.calibDataLen = calibLen; 
+    cfgout.ref_mask   = ref_mask;
 
     %% run ASR cleaning <----------------------------------------------------------------
     fprintf('running ASR cleaning ...\n')

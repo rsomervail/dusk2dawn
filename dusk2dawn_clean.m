@@ -73,6 +73,15 @@ if npars >= 1, np1 = size(pars.values{1},2); else, np1 = 1; end
 if npars >= 2, np2 = size(pars.values{2},2); else, np2 = 1; end
 if npars == 3, np3 = size(pars.values{3},2); else, np3 = 1; end
 
+%% check whether it's appropriate to store mask containing data for calibration and reuse in each iteration
+if npars > 0 % this only matters if there are mu
+    if ~any(startsWith(pars.labels, 'ref_')) && ~cfg.splitByStage && ~cfg.splitBySlidingWindow  
+        flag_reuseCalibData = true;
+    else
+        flag_reuseCalibData = false;
+    end
+end
+
 %% generate all filenames that cleaned data will be saved as later ____________________________________________________________
 count = 1;
 % parameter loop 1
@@ -226,6 +235,7 @@ for f = 1:nfiles
     %% loop through all varied parameters & clean data
     cfg2 = rmfield( cfg, 'savePath' ); % make copy for ASR cleaning which shouldn't save the files until after validation
     count = 1;
+
     % loop 1
     for p1 = 1:np1
     
@@ -256,7 +266,7 @@ for f = 1:nfiles
                 % print 
                 if npars > 0
                     fprintf(['\n' repmat('-', 1,200) '\n']);
-                    fprintf([ '%s: cleaning runthrough: %02d/%02d'  '\n'],mfilename, count, np1*np2*np3 );
+                    fprintf([ '%s: cleaning runthrough: %02d/%02d   -   START'  '\n'],mfilename, count, np1*np2*np3 );
                         val = pars.values{1}{p1};
                         if size(val,1) > 1, val = val'; end % if 2D param then transpose before converting to str
                         str =       sprintf('%s = %s (%02d/%02d)',      pars.labels{1}, num2str(val),  p1, np1);
@@ -273,7 +283,6 @@ for f = 1:nfiles
                     fprintf([ 'varied parameters: ' str ],mfilename)
                     fprintf(['\n' repmat('-', 1,200) '\n\n']);
                 end
-                
                 
                 % loop through sleep stages
                 if cfg.splitByStage
@@ -297,9 +306,16 @@ for f = 1:nfiles
                     valid(count,:) = EEG_cleaned.etc.dusk2dawn.valid; % extract validation across stages for later merging
                     
                 else % not splitting by stages
+
+                    % use already-generated calibration mask if it is compatible
+                    if flag_reuseCalibData
+                        if count > 1 % if not first file
+                            cfg2.ref_mask = cfg2_out.ref_mask;
+                        end
+                    end
     
                     % run actual cleaning with the chosen parameters
-                    EEG_cleaned = d2d_cleanData(EEG, cfg2);
+                    [EEG_cleaned, cfg2_out] = d2d_cleanData(EEG, cfg2);
                     
                     % run ICA
                     if cfg.ica.run
@@ -320,7 +336,7 @@ for f = 1:nfiles
                 % print 
                 if npars > 0
                     fprintf(['\n' repmat('-', 1,200) '\n']);
-                    fprintf([ '%s: finished cleaning & validating runthrough: %02d/%02d'  '\n'],mfilename, count, np1*np2*np3 );
+                    fprintf([ '%s: cleaning runthrough: %02d/%02d   -   END'  '\n'],mfilename, count, np1*np2*np3 );
                     fprintf(['\n' repmat('-', 1,200) '\n\n']);
                 end
 

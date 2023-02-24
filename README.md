@@ -9,6 +9,7 @@ Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB.
 		www.iannettilab.net    
 		  
 	History:  
+	24/02/2023 ver 2.0.0 Added group-level/batch processing of multiple datasets.  
 	30/01/2023 ver 1.0.1 Patch to fix initial bugs and solidify basic functionality.  
 	19/01/2023 ver 1.0.0 Created  
 	

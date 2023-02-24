@@ -5,10 +5,6 @@
 % Dusk2Dawn
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net
-% History:
-% 20/02/2023 ver 2.0.0 added multiple dataset support
-% 30/01/2023 ver 1.0.1 Patch to fix initial bugs and solidify basic functionality.
-% 19/01/2023 ver 1.0.0 Created
 % 
 %%  
 function vers = eegplugin_dusk2dawn(fig,try_strings,catch_strings)

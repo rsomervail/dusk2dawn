@@ -142,7 +142,7 @@ else
     
     %% find initial calibration data  
     if isfield(cfg,'ref_mask') % check if this has been provided already by the user
-        fprintf('d2d_cleanData: using user-specified calibration data\n')
+        fprintf('d2d_cleanData: using previously-generated calibration data\n')
         ref_mask = cfg.ref_mask; % important to have local variable here so it later gets outputted again
         evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
     else % if no calibration data is provided by the user

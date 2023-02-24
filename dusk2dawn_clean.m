@@ -74,12 +74,15 @@ if npars >= 2, np2 = size(pars.values{2},2); else, np2 = 1; end
 if npars == 3, np3 = size(pars.values{3},2); else, np3 = 1; end
 
 %% check whether it's appropriate to store mask containing data for calibration and reuse in each iteration
-if npars > 0 % this only matters if there are mu
-    if ~any(startsWith(pars.labels, 'ref_')) && ~cfg.splitByStage && ~cfg.splitBySlidingWindow  
+if npars > 0 % this only matters if there are multiple varied parameters
+    % if not varying calibration data parameters & no sliding window
+    if     ~any(startsWith(pars.labels, 'ref_')) && ~cfg.splitBySlidingWindow  
         flag_reuseCalibData = true;
     else
         flag_reuseCalibData = false;
     end
+else
+    flag_reuseCalibData = false;
 end
 
 %% generate all filenames that cleaned data will be saved as later ____________________________________________________________
@@ -234,6 +237,7 @@ for f = 1:nfiles
     
     %% loop through all varied parameters & clean data
     cfg2 = rmfield( cfg, 'savePath' ); % make copy for ASR cleaning which shouldn't save the files until after validation
+    clearvars cfg2_out
     count = 1;
 
     % loop 1
@@ -287,9 +291,16 @@ for f = 1:nfiles
                 % loop through sleep stages
                 if cfg.splitByStage
                     for st = 1:nstages
-    
+
+                        % use already-generated calibration mask if it is compatible
+                        if flag_reuseCalibData
+                            if count > 1 % if not first file
+                                cfg2.ref_mask = cfg2_out(st).ref_mask;
+                            end
+                        end
+        
                         % run actual cleaning with the chosen parameters
-                        EEG_cleaned(st) = d2d_cleanData(EEG_stages(st), cfg2);
+                        [EEG_cleaned(st), cfg2_out(st)] = d2d_cleanData(EEG_stages(st), cfg2);
     
                         % run ICA for this stage
                         if cfg.ica.run

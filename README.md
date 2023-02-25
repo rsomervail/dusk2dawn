@@ -6,6 +6,7 @@ Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB.
 - The plugin uses functions from the official 'clean_rawdata' ASR plugin included in recent versions of EEGLAB.
 
 	Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022  
+		r.somervail@gmail.com  
 		www.iannettilab.net    
 		  
 	History:  

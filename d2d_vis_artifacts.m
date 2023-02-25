@@ -43,4 +43,4 @@ else
 end
 
 %% call vis_artifacts function with these two datasets
-vis_artifacts( EEG_blue, EEG_red ); 
+vis_artifacts( EEG_blue, EEG_red, 'EqualizeChannelScaling',false ); 

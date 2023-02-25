@@ -63,12 +63,15 @@ if nfiles > 1
     % get default savePath
     if sum( ~cellfun( @isempty, {EEG.filepath} ) ) == nfiles
         if isequal( EEG.filepath )
-            savePath_default = [EEG(1).filepath filesep];
+            savePath_default = EEG(1).filepath;
         else
-            savePath_default = [cd filesep];
+            savePath_default = cd;
         end
     else
-        savePath_default = [cd filesep];
+        savePath_default = cd;
+    end
+    if ~strcmp(savePath_default(end),filesep)
+        savePath_default = [savePath_default filesep];
     end
 %     saveName_default = 'D2D '; 
     
@@ -84,9 +87,12 @@ else % if only one dataset
 
     % get default savePath
     if isempty( EEG.filepath )
-        savePath_default = [cd filesep];
+        savePath_default = cd;
     else
-        savePath_default = [EEG.filepath filesep];
+        savePath_default = [EEG.filepath];
+    end
+    if ~strcmp(savePath_default(end),filesep)
+        savePath_default = [savePath_default filesep];
     end
 %     if ~isempty(EEG.filename)
 %         saveName_default = strrep( EEG.filename ,'.set','');
@@ -103,6 +109,7 @@ else % if only one dataset
     misc_asr.srate  = EEG.srate;
 
 end
+
 
 %% set defaults
 % handle core function defaults
@@ -246,7 +253,7 @@ ui_d2d = { ...
     {} ...
         { 'Style', 'edit', 'string', '[ 0, 30 ]' ,  'tag' 'stageWin'  } ...
         { 'Style', 'text', 'string', '<--- choose window around sleep stage events (s)' 'fontweight', 'bold'  } ...
-    { 'Style', 'checkbox', 'string' ' (2) Run ASR in a sliding window?' 'fontweight', 'bold' 'value' 1 'tag' 'splitBySlidingWindow' } ...    
+    { 'Style', 'checkbox', 'string' ' (2) Run ASR in a sliding window?' 'fontweight', 'bold' 'value' ~splitByStage_default 'tag' 'splitBySlidingWindow' } ...    
     {} ...    
         { 'Style', 'edit', 'string', '[   8   ]' 'tag' 'chunk_len'  } ...    
         { 'Style', 'text', 'string', '<--- choose length of sliding window (mins)','fontweight', 'bold'} ...
@@ -369,7 +376,6 @@ else
 end
 
 %% UPDATE ADVANCED SETTINGS
-
 % need to copy advanced settings to cfg here using the subfunction
 cfg = updateCFG(cfg,cfg_valid);
 cfg = updateCFG(cfg,cfg_asr);
@@ -377,6 +383,16 @@ cfg = updateCFG(cfg,cfg_asr);
 %% make save directory if doesn't exist yet
 if ~exist(cfg.savePath,'dir')
     mkdir(cfg.savePath);
+end
+
+%% check for matching files in this directory, indicating there is a run of D2D already present
+files = dir(cfg.savePath);
+files = files(~[files.isdir]);
+files = {files.name};
+if any(contains(files,'_clean'))
+    errordlg2('! looks like there are already D2D-cleaned files in this folder - delete them or choose another folder' ...
+        ,'Error - The chosen save folder may contain a previous D2D runthrough');
+    error 'looks like there are already D2D-cleaned files in this folder - delete them or choose another folder';
 end
 
 %% store & reformat parameters

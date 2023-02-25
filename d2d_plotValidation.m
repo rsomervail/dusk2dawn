@@ -1,9 +1,6 @@
 % 
 % 
 %       plot validation metrics from up to 3 parameter dimensions at a time (for one dataset or a group)
-%           inputs:
-%               - cfg.dims2plot = indexes of which parameters will be plotted and how (1st is x-axis, 2nd is subplot rows, 3rd is subplot columns)
-% 
 %
 % 
 % Dusk2Dawn
@@ -28,6 +25,7 @@ end
 %% defaults
 % general
 if ~isfield(cfg,'saveFig'),     cfg.saveFig   = false;   end
+if ~isfield(cfg,'maxFig'),      cfg.maxFig   = true;   end
 if ~isfield(cfg,'saveAs'),      cfg.saveAs    = '';     end
 if ~isfield(cfg,'saveFold'),    cfg.saveFold  = [];     end % set later
 % what to plot (? currently unused)
@@ -116,7 +114,7 @@ nparx = length(parx_val);
 
 %% Loop through any selected sleep stages
 if ~cfgd.splitByStage
-    stageCodes = 1;
+    stageCodes = {''};
     nstages = 1;
     cfg.stages = 1;
 else
@@ -237,7 +235,8 @@ for st = 1:nstages
         % computation time (ASR) (absolute)
         set(0, 'CurrentFigure', fig_asr_tElapsed_abs(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = o.m_tElapsed(' indstr ');' ])
+        met2plot = 'm_tElapsed';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         temp2plot = temp2plot ./ 60; % change units to minutes
         if nfiles == 1
@@ -247,15 +246,16 @@ for st = 1:nstages
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-or'  ); hold on
         end
         ylabel 'computation time (mins)'
-        ylim([ min(o.m_tElapsed /60,[],'all')  max(o.m_tElapsed /60,[],'all')])
+        setYlim( 'abs' , 1/60 ) % plot type, multiplier for data
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
     
         % percentage of timepoints altered by ASR
         set(0, 'CurrentFigure', fig_cleanData(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
+        met2plot = 'm_propCleaned';
         yyaxis left
-        eval([ 'temp2plot = o.m_propCleaned(' indstr ');' ]) 
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ]) 
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
@@ -264,13 +264,14 @@ for st = 1:nstages
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o'  ); hold on
         end
         ylabel '% timepoints altered'
-        ylim([-10 110])
+        setYlim('%',1) % plot type, multiplier
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         % percentage of variance removed by ASR
         yyaxis right
-        eval([ 'temp2plot = o.m_propVarRemoved(' indstr ');' ]) 
-%         eval([ 'temp2plot = o.m_propGFPRemoved(' indstr ');' ]) 
+        met2plot = 'm_propVarRemoved';
+%         met2plot = 'm_propGFPRemoved';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ]) 
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize, 'Color',col_orange ); hold on; 
@@ -279,9 +280,7 @@ for st = 1:nstages
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o','cmap',col_orange  ); hold on
         end
         ylabel '% variance removed'
-        ylim([-10 110])
-%         ylim([ min(o.m_propVarRemoved,[],'all')  max(o.m_propVarRemoved,[],'all')])
-%         ylim([ min(o.m_propGFPRemoved,[],'all')  max(o.m_propGFPRemoved,[],'all')])
+        setYlim('%',1) % plot type, multiplier
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         
@@ -290,7 +289,8 @@ for st = 1:nstages
         set(0, 'CurrentFigure', fig_calibData(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
         yyaxis left
-        eval([ 'temp2plot = o.m_calibDataLen_min(' indstr ');' ]) 
+        met2plot = 'm_calibDataLen_min';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ]) 
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on;
@@ -300,13 +300,14 @@ for st = 1:nstages
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), '-', 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
         ylabel 'minimum calibration time (s)'
-        ylim([ min(o.m_calibDataLen_min,[],'all')  max(o.m_calibDataLen_min,[],'all')])
+        setYlim('abs',1)
         plot(xlim,[60,60],'r--'); % 60s threshold dashed red line
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         % percentage of data chunks with sufficient calibration
         yyaxis right
-        eval([ 'temp2plot = o.m_calibDataLen_prop60s(' indstr ');' ])
+        met2plot = 'm_calibDataLen_prop60s';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
@@ -315,7 +316,7 @@ for st = 1:nstages
             [lineh, areah] = boundedline( dimx_range, mean(temp2plot), std(temp2plot) ,'-o', 'cmap',[1,0.4,0]  ); hold on
         end
         ylabel '% of cleaning chunks with sufficient calibration data (>=60s)'
-        ylim([0 100])
+        setYlim('%',1)
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
     
@@ -328,7 +329,8 @@ for st = 1:nstages
         % plot frequency power by band (absolute)
         set(0, 'CurrentFigure', fig_fft_powerByBand_abs(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = squeeze( o.m_binAmp_avgChan(' indstr ',:) );' ])
+        met2plot = 'm_binAmp_avgChan';
+        eval([ 'temp2plot = squeeze( o.(met2plot)(' indstr ',:) );' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             for k = 1:size(temp2plot,2)
@@ -342,6 +344,7 @@ for st = 1:nstages
             end
         end
         ylabel 'power'
+        setYlim('abs',1)
         if c == 1 && r == 1, legend(lineh,o.binFreqsLabels, 'Location','northeast'); end
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
@@ -350,8 +353,8 @@ for st = 1:nstages
         % plot frequency power by band (percentage)
         set(0, 'CurrentFigure', fig_fft_powerByBand_prop(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        title(subplot_title); hold on
-        eval([ 'temp2plot = squeeze( o.m_binAmp_avgChan_prop(' indstr ',:) );' ])
+        met2plot = 'm_binAmp_avgChan_prop';
+        eval([ 'temp2plot = squeeze( o.(met2plot)(' indstr ',:) );' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             for k = 1:size(temp2plot,2)
@@ -365,7 +368,7 @@ for st = 1:nstages
             end
         end
         ylabel 'power (%)'
-        ylim([ min(o.m_binAmp_avgChan_prop,[],'all')  max(o.m_binAmp_avgChan_prop,[],'all')])
+        setYlim('abs',1) % abs here because makes a neater plot for power reduction
         if c == 1 && r == 1, legend(lineh,o.binFreqsLabels, 'Location','northeast'); end
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
@@ -379,7 +382,8 @@ for st = 1:nstages
         % plot n slow-waves
         set(0, 'CurrentFigure', fig_sw_nwaves(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = o.m_nwaves(' indstr ');' ])
+        met2plot = 'm_nwaves';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
@@ -389,14 +393,15 @@ for st = 1:nstages
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
         ylabel 'number of slow-waves'
-        if (std(std(o.m_nwaves))~=0), ylim([ min(o.m_nwaves,[],'all')  max(o.m_nwaves,[],'all')]); ylim(ylim + [-range(ylim)/lms,range(ylim)/lms]); end
+        setYlim('abs',1);
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         
         % plot slow-wave amplitude (absolute)
         set(0, 'CurrentFigure', fig_sw_amp_mean_abs(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = o.m_amp_mean(' indstr ');' ])
+        met2plot = 'm_amp_mean';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
@@ -406,14 +411,15 @@ for st = 1:nstages
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
         ylabel 'slow-wave amplitude (µV)'
-        ylim([ min(o.m_amp_mean,[],'all')  max(o.m_amp_mean,[],'all')])
+        setYlim('abs',1);
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         
         % plot slow-wave amplitude (percentage)
         set(0, 'CurrentFigure', fig_sw_amp_mean_prop(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = o.m_amp_mean_prop(' indstr ');' ])
+        met2plot = 'm_amp_mean_prop';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
@@ -423,14 +429,15 @@ for st = 1:nstages
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
         ylabel 'slow-wave amplitude (% of raw)'
-        ylim([ 0, 100])
+        setYlim('%',1);
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         
         % plot slow-wave t-value
         set(0, 'CurrentFigure', fig_sw_tval_median(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = o.m_tval_median(' indstr ');' ])
+        met2plot = 'm_tval_median';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
@@ -440,7 +447,7 @@ for st = 1:nstages
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
         ylabel 'slow-wave consistency (t value)'
-        ylim([ min(o.m_tval_median,[],'all')  max(o.m_tval_median,[],'all')])
+        setYlim('abs',1);
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
     
@@ -454,7 +461,8 @@ for st = 1:nstages
         % plot computation time (absolute)
         set(0, 'CurrentFigure', fig_ica_tElapsed_abs(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = o.m_tElapsed(' indstr ');' ])
+        met2plot = 'm_tElapsed';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         temp2plot = temp2plot ./ 60; % change units to minutes
         if nfiles == 1
@@ -465,14 +473,15 @@ for st = 1:nstages
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
         ylabel 'computation time (mins)'
-        ylim([ min(o.m_tElapsed /60,[],'all')  max(o.m_tElapsed /60,[],'all')])
+        setYlim('abs',1/60);
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         
         % plot computation time (percentage)
         set(0, 'CurrentFigure', fig_ica_tElapsed_prop(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = o.m_tElapsed_prop(' indstr ');' ])
+        met2plot = 'm_tElapsed_prop';
+        eval([ 'temp2plot = o.(met2plot)(' indstr ');' ])
         temp2plot = double(temp2plot);
         if nfiles == 1
             plot( dimx_range , temp2plot, '-o', 'LineWidth', 1.5, 'MarkerSize',MarkerSize ); hold on; 
@@ -482,7 +491,7 @@ for st = 1:nstages
             for sb = 1:size(temp2plot,1), plot( dimx_range, temp2plot(sb,:), 'Color', [0.2, 0.2, 0.2, SingleSubOpacity]  ); end % plot single subjects
         end
         ylabel 'computation time (% of raw)'
-        ylim([ min(o.m_tElapsed_prop ,[],'all')  max(o.m_tElapsed_prop,[],'all')])
+        setYlim('abs',1) % more zoomed in for subtle differences in % computation time
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
         
@@ -491,7 +500,8 @@ for st = 1:nstages
         % plot class probabilities (% of components)
         set(0, 'CurrentFigure', fig_ica_classProb4_catNumProp(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = squeeze( o.m_classProb4_catNumProp(' indstr ',:) );' ])
+        met2plot = 'm_classProb4_catNumProp';
+        eval([ 'temp2plot = squeeze( o.(met2plot)(' indstr ',:) );' ])
         temp2plot = double(temp2plot);
         clear lineh areah
         if nfiles == 1
@@ -505,7 +515,7 @@ for st = 1:nstages
             end
         end
         ylabel '% of components'
-        ylim([0 100])
+        setYlim('%',1)
         if c == 1 && r == 1, legend(lineh,o.classProb4_classLabs, 'Location','northeast'); end
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
@@ -513,7 +523,8 @@ for st = 1:nstages
         % plot class probabilities (% of variance explained)
         set(0, 'CurrentFigure', fig_ica_classProb4_catVarProp(st)) % select this figure
         subplot(nparr,nparc, getSubplotInd(r,c, nparc));
-        eval([ 'temp2plot = squeeze( o.m_classProb4_catVarProp(' indstr ',:) );' ])
+        met2plot = 'm_classProb4_catVarProp';
+        eval([ 'temp2plot = squeeze( o.(met2plot)(' indstr ',:) );' ])
         temp2plot = double(temp2plot);
         clear lineh areah
         if nfiles == 1
@@ -528,7 +539,7 @@ for st = 1:nstages
         end
         axis square
         ylabel '% of variance explained'
-        ylim([0 100])
+        setYlim('%',1)
         if c == 1 && r == 1, legend(lineh,o.classProb4_classLabs, 'Location','northeast'); end
             editPlot; % set various plotting parameters
             reorderPlots(gca); % bring all lines to foreground and send patches to background
@@ -541,33 +552,58 @@ for st = 1:nstages
 end    % end stage loop
 
 %% Maximise all figures produced
-figs = findall(0, 'type', 'Figure');
-figs(~startsWith({figs.Name},'D2D - ')) = [];
-for f = 1:length(figs)
-    fig = figs(f);
-    fig.Units = 'normalized';
-    fig.Position = [0 0.0370 1 0.8917];
+if cfg.maxFig
+    figs = findall(0, 'type', 'Figure');
+    figs(~startsWith({figs.Name},'D2D - ')) = [];
+    for f = 1:length(figs)
+        fig = figs(f);
+        fig.Units = 'normalized';
+        fig.Position = [0 0.0370 1 0.8917];
+    end
 end
 
 %% Save figures
 if cfg.saveFig
     fprintf('saving figures ...\n')
-    
+
+    % get savedir
+    cfg.savePath = EEG(1).etc.dusk2dawn.cfg.savePath;
+
     % loop through figure handles and save
-    figs = whos('fig_*');
-    fighandles = nan(size(figs));
-    for f = 1:length(figs)
-        eval([  'fighandles(f) = ' figs(f).name ';'])
+    figvars = whos('fig_*');
+    fighandles = nan(size(figvars,1) * nstages,1);
+    fignames   = cell(size(figvars,1) * nstages,1);
+    count = 1;
+    for st = 1:nstages
+        stage = stageCodes{st};
+        stage = strrep(stage,'[','');
+        stage = strrep(stage,']','');
+        stage = [stage '_'];
+        for f = 1:length(figvars)
+            fignames{count} = strrep(figvars(f).name,'fig_',['fig_' stage]);
+            eval([  'fighandles(count) = ' figvars(f).name '(st);'])
+            count = count + 1;
+        end
     end
-    cfg.saveFold = EEG(1).etc.dusk2dawn.cfg.savePath;
-    for f = 1:length(figs)
-        savefig( fighandles(f) , [cfg.saveFold  filesep  figs(f).name ]); % save fig
+    for f = 1:length(fignames)
+        savefig( fighandles(f) , [cfg.savePath  filesep  fignames{f} ]); % save fig
     end
     
     fprintf('... saved figures\n')
 end
 
 %% Subfunctions
+function setYlim(mode, mult)
+    switch mode 
+        case '%'
+            ylim([0 100]) % already expanded in editPlot function
+%             ylim([-10 110])
+        case 'abs'
+            if range(o.(met2plot),'all') ~= 0
+                ylim([ min(o.(met2plot) * mult,[],'all')  max(o.(met2plot) * mult,[],'all')])
+            end
+    end
+end
 function editPlot
 %     ax = gca;
     % group vs single-dataset specific
@@ -588,7 +624,7 @@ function editPlot
     xticks(dimx_range); xticklabels(parx_val(dimx_range)) % set x axis ticks to match parameter values
     xlabel(parx_lab) % set x axis label to match parameter name
     xlim(xlim + [-range(xlim)/lms,range(xlim)/lms]) % expand x-axis a bit
-    ylim(ylim + [-range(ylim)/lms,range(ylim)/lms])
+    ylim(ylim + [-range(ylim)/lms,range(ylim)/lms]) % expand y-axis a bit
 end
 function reorderPlots(ax)
     % assuming patch is always last

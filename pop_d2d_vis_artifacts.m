@@ -124,7 +124,8 @@ uilist = [         ...
 if (npars > 0) || (nfiles > 1) % these are the two conditions in which we need to plot the GUI here
 
     [ tmp1 tmp2 strhalt cfg ] = inputgui( geometry, uilist, ...
-       ['pophelp(''' mfilename ''');'], ['Superimpose the same dataset before/after ASR cleaning -- ' mfilename '()']);
+       [], ['Superimpose the same dataset before/after ASR cleaning -- ' mfilename '()']);
+%        'pophelp(pop_d2d_vis_artifacts)', ['Superimpose the same dataset before/after ASR cleaning -- ' mfilename '()']);
      
     % return if cancelled
     if ~strcmp(strhalt,'retuninginputui') 

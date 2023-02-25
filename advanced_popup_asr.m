@@ -113,7 +113,7 @@ function   out = advanced_popup_asr(in, plot, misc)
         % ASR defaults
         out.ref_tolerances = '[  -3.5,  5  ]';
         out.ref_maxbadchannels = '[   7.5   ]';
-        out.asr_windowlength = ['[ '  num2str( max(0.5,1.5*misc.nbchan/misc.srate) , 8 )  ' ]'];
+        out.asr_windowlength = ['[ '  num2str( max( 2,1.5*misc.nbchan/misc.srate) , 8 )  ' ]'];
         out.asr_useGPU = 0;
 
         % d2d defaults

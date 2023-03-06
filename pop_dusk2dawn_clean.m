@@ -388,11 +388,17 @@ end
 %% check for matching files in this directory, indicating there is a run of D2D already present
 files = dir(cfg.savePath);
 files = files(~[files.isdir]);
-files = {files.name};
-if any(contains(files,'_clean'))
-    errordlg2('! looks like there are already D2D-cleaned files in this folder - delete them or choose another folder' ...
-        ,'Error - The chosen save folder may contain a previous D2D runthrough');
-    error 'looks like there are already D2D-cleaned files in this folder - delete them or choose another folder';
+files = {files.name};           
+files(~endsWith(files,'.set')) = []; % remove all but .set files
+files2clean = {EEG.filename};
+files2clean = strrep(files2clean,'.set',''); % remove extensions
+if any(  ...
+        contains(files,'_clean') ...
+        &  cellfun(  @(x) any(startsWith(x, files2clean )) , files )  ...
+      )   
+    errordlg2('! looks like there are already D2D-cleaned files in this folder - this may cause compatibility issues' ...
+        ,'Error - The chosen save folder may contain a previous D2D runthrough for these datasets');
+%     error 'looks like there are already D2D-cleaned files in this folder - delete them or choose another folder';
 end
 
 %% store & reformat parameters

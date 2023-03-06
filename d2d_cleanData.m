@@ -96,7 +96,7 @@ if cfg.splitBySlidingWindow
         EEG_chunk.data = EEG.data( :, chunks(ch,1):chunks(ch,2) );
 
         %% get calibration data        
-        evalc([ ' [ref_section, ref_mask] = clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
+        evalc([ ' [ref_section, ref_mask] = d2d_clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
         
         %% check calibration data are an adequate length
         calibLen = size(ref_section.times,2) / ref_section.srate; % compute calibration data length in seconds
@@ -110,7 +110,7 @@ if cfg.splitBySlidingWindow
         cfgout.calibDataMask{ch}   = ref_mask;
 
         %% run ASR cleaning <----------------------------------------------------------------
-        EEG_chunk_cleaned = clean_asr( EEG_chunk, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
+        EEG_chunk_cleaned = d2d_clean_asr( EEG_chunk, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
                    ref_section,[],[], cfg.asr_useGPU , cfg.asr_useRiemmanian, cfg.asr_MaxMem ); 
         
         %% insert chunk into output data structure
@@ -147,7 +147,7 @@ else
         evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
     else % if no calibration data is provided by the user
         fprintf('d2d_cleanData: finding data to use for calibration ...\n')
-        evalc([ ' [ref_section, ref_mask] = clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
+        evalc([ ' [ref_section, ref_mask] = d2d_clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
 
         % if manual check is active, edit the calibration selection
         if cfg.checkCalibManual
@@ -206,7 +206,7 @@ else
     %% run ASR cleaning <----------------------------------------------------------------
     fprintf('running ASR cleaning ...\n')
     tin_asr = tic;
-        EEG_out = clean_asr( EEG, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
+        EEG_out = d2d_clean_asr( EEG, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
                        ref_section,[],[], cfg.asr_useGPU , cfg.asr_useRiemmanian, cfg.asr_MaxMem ); 
     cfgout.tElapsed = toc(tin_asr);
     fprintf( '... cleaning completed in %.2f mins\n\n', cfgout.tElapsed/60 ) 

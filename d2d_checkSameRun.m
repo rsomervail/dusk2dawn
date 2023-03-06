@@ -7,7 +7,8 @@
 function flag = d2d_checkSameRun(EEG)
     for f = 1:length(EEG)
         temp = EEG(f).etc.dusk2dawn.cfg;
-        d2d{f} = rmfield( temp, {'origFile','cleanFiles'} );   
+        d2d{f} = rmfield( temp, {'origFile','cleanFiles', 'asr_useGPU'} );   
+        d2d{f} = rmfield( d2d{f},  );
     end
     flag = isequaln(d2d{:});
     

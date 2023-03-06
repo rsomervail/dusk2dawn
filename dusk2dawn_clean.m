@@ -133,10 +133,12 @@ end % p3
 %% _________________________________________________________________________________________________________________________
 
 %% LOOP THROUGH DATASETS
+tIN = tic;
 for f = 1:nfiles
 
     %% get dataset
     EEG = EEG_all(f);
+    cur_setname = EEG.setname;
     
     % if data not loaded already, then load the data & store this info so it can be cleared later to preserve memory
     if ischar(EEG.data)
@@ -270,7 +272,7 @@ for f = 1:nfiles
                 % print 
                 if npars > 0
                     fprintf(['\n' repmat('-', 1,200) '\n']);
-                    fprintf([ '%s: cleaning runthrough: %02d/%02d   -   START'  '\n'],mfilename, count, np1*np2*np3 );
+                    fprintf([ '%s: cleaning dataset: "%s" - runthrough: %02d/%02d   -   START'  '\n'],mfilename, cur_setname, count, np1*np2*np3 );
                         val = pars.values{1}{p1};
                         if size(val,1) > 1, val = val'; end % if 2D param then transpose before converting to str
                         str =       sprintf('%s = %s (%02d/%02d)',      pars.labels{1}, num2str(val),  p1, np1);
@@ -347,7 +349,8 @@ for f = 1:nfiles
                 % print 
                 if npars > 0
                     fprintf(['\n' repmat('-', 1,200) '\n']);
-                    fprintf([ '%s: cleaning runthrough: %02d/%02d   -   END'  '\n'],mfilename, count, np1*np2*np3 );
+                    fprintf([ '%s: cleaning dataset: "%s" - runthrough: %02d/%02d   -   END'  '\n'],mfilename, cur_setname, count, np1*np2*np3 );
+                    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
                     fprintf(['\n' repmat('-', 1,200) '\n\n']);
                 end
 
@@ -387,8 +390,9 @@ for f = 1:nfiles
     EEG_all(f) = EEG;
 
     % print dataset output
-    fprintf(['\n\n' repmat('_', 1,200) '\n']);
-    fprintf([ '%s: finished cleaning & validating dataset: "%s" (%d/%d)\n'], mfilename, EEG.setname,f,nfiles)
+    fprintf(['\n\n' repmat('_', 1,200) '\n\n']);
+    fprintf( '%s: finished cleaning & validating dataset: "%s" (%d/%d)\n', mfilename, EEG.setname,f,nfiles)
+    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
     fprintf([ repmat('_', 1,200) '\n\n\n']);
 
 end % loop through datasets
@@ -400,5 +404,11 @@ EEG = EEG_all; % rename to EEG so it can be passed back out to master function
 if nfiles > 1
     EEG = d2d_group_validateMerge(EEG);
 end
+
+fprintf('\n\n')
+fprintf('%s: finished cleaning all selected datasets\n',mfilename)
+fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
+fprintf(['\n\n' repmat('_ _', 1,100) '\n\n']);
+fprintf('\n\n')
 
 end % function

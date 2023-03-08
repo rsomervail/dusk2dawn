@@ -350,6 +350,7 @@ for f = 1:nfiles
                 if npars > 0
                     fprintf(['\n' repmat('-', 1,200) '\n']);
                     fprintf([ '%s: cleaning dataset: "%s" - runthrough: %02d/%02d   -   END'  '\n'],mfilename, cur_setname, count, np1*np2*np3 );
+                    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
                     fprintf(['\n' repmat('-', 1,200) '\n\n']);
                 end
 
@@ -360,7 +361,7 @@ for f = 1:nfiles
         end % loop 2
     end % loop 1
     
-    % merge results of post-ASR validation across datasets and store in all datasets
+    %% merge results of post-ASR validation across datasets and store in all datasets
     ctemp = [];
     if cfg.splitByStage
         ctemp.valid = [ valid_orig; valid];
@@ -389,8 +390,9 @@ for f = 1:nfiles
     EEG_all(f) = EEG;
 
     % print dataset output
-    fprintf(['\n\n' repmat('_', 1,200) '\n']);
-    fprintf([ '%s: finished cleaning & validating dataset: "%s" (%d/%d)\n'], mfilename, EEG.setname,f,nfiles)
+    fprintf(['\n\n' repmat('_', 1,200) '\n\n']);
+    fprintf( '%s: finished cleaning & validating dataset: "%s" (%d/%d)\n', mfilename, EEG.setname,f,nfiles)
+    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
     fprintf([ repmat('_', 1,200) '\n\n\n']);
 
 end % loop through datasets
@@ -402,5 +404,11 @@ EEG = EEG_all; % rename to EEG so it can be passed back out to master function
 if nfiles > 1
     EEG = d2d_group_validateMerge(EEG);
 end
+
+fprintf('\n\n')
+fprintf('%s: finished cleaning all selected datasets\n',mfilename)
+fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
+fprintf(['\n\n' repmat('_ _', 1,100) '\n\n']);
+fprintf('\n\n')
 
 end % function

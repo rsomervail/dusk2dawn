@@ -175,7 +175,10 @@ for f = 1:nfiles
     end
     
     %% run validation on raw data for reference
+    fprintf([ repmat('-', 1,200) '\n\n']);
     fprintf('%s: computing validation metrics on raw data as a baseline\n\n',mfilename)
+    fprintf([ repmat('-', 1,200) '\n\n']);
+
     % loop through sleep stages 
     if cfg.splitByStage
         for st = 1:nstages
@@ -236,6 +239,11 @@ for f = 1:nfiles
         EEG = d2d_saveDataset(EEG, ctemp); % keep if not splitting by stage
         
     end % end if split by stages
+
+    fprintf(['\n' repmat('-', 1,200) '\n\n']);
+    fprintf('%s: computed validation metrics on raw data as a baseline\n',mfilename)
+    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
+    fprintf(['\n' repmat('-', 1,200) '\n\n']);
     
     %% loop through all varied parameters & clean data
     cfg2 = rmfield( cfg, 'savePath' ); % make copy for ASR cleaning which shouldn't save the files until after validation
@@ -361,7 +369,7 @@ for f = 1:nfiles
         end % loop 2
     end % loop 1
     
-    % merge results of post-ASR validation across datasets and store in all datasets
+    %% merge results of post-ASR validation across datasets and store in all datasets
     ctemp = [];
     if cfg.splitByStage
         ctemp.valid = [ valid_orig; valid];

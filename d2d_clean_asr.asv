@@ -1,4 +1,4 @@
-function signal = d2d_clean_asr(signal,cutoff,windowlen,stepsize,maxdims,ref_maxbadchannels,ref_tolerances,ref_wndlen,usegpu,useriemannian,maxmem)
+function [signal] = d2d_clean_asr(signal,cutoff,windowlen,stepsize,maxdims,ref_maxbadchannels,ref_tolerances,ref_wndlen,usegpu,useriemannian,maxmem)
 % Run the ASR method on some high-pass filtered recording.
 % Signal = clean_asr(Signal,StandardDevCutoff,WindowLength,BlockSize,MaxDimensions,ReferenceMaxBadChannels,RefTolerances,ReferenceWindowLength,UseGPU,UseRiemannian,MaxMem)
 %
@@ -162,8 +162,10 @@ elseif ischar(ref_maxbadchannels) && isvarname(ref_maxbadchannels)
     disp('Using a user-supplied data set in the workspace.');
     ref_section = evalin('base',ref_maxbadchannels);
 elseif all(isfield(ref_maxbadchannels,{'data','srate','chanlocs'}))
-    disp('Using a user-supplied clean section of data.');
-    ref_section = ref_maxbadchannels; 
+%     disp('Using a user-supplied calibration state.'); % RS edit, probably remove
+%     state = ref_maxbadchannels; % rs edit, probably remove
+    disp('Using a user-supplied clean section of data.'); % original code
+    ref_section = ref_maxbadchannels; % original code
 else
     error('Unsupported value for argument ref_maxbadchannels.');
 end
@@ -172,17 +174,16 @@ end
 disp('Estimating calibration statistics; this may take a while...');
 if exist('hlp_diskcache','file')
     if useriemannian
-        state = hlp_diskcache('filterdesign',@d2d_asr_calibrate_r,ref_section.data,ref_section.srate,cutoff); % ? RS: not editing these lines because not sure how paramters are passed to this (external?) version of the function
+        state = hlp_diskcache('filterdesign',@d2d_asr_calibrate_r,ref_section.data,ref_section.srate,cutoff);
     else
-        state = hlp_diskcache('filterdesign',@d2d_asr_calibrate,ref_section.data,ref_section.srate,cutoff); % ? RS: not editing these lines because not sure how paramters are passed to this (external?) version of the function
+        state = hlp_diskcache('filterdesign',@d2d_asr_calibrate,ref_section.data,ref_section.srate,cutoff);
     end
 else
     if useriemannian
-        state = d2d_asr_calibrate_r(ref_section.data,ref_section.srate,cutoff, [], [], [], windowlen, [], [], [], maxmem); % RS edit to pass down window length
+        state = d2d_asr_calibrate_r(ref_section.data,ref_section.srate,cutoff, [], [], [], [], [], [], [], maxmem); % RS edit to pass down window length
 %         state = d2d_asr_calibrate_r(ref_section.data,ref_section.srate,cutoff, [], [], [], [], [], [], [], maxmem); % original code
     else
-        state = d2d_asr_calibrate(ref_section.data,ref_section.srate,cutoff, [], [], [], windowlen, [], [], [], maxmem); % RS edit to pass down window length
-%         state = d2d_asr_calibrate(ref_section.data,ref_section.srate,cutoff, [], [], [], [], [], [], [], maxmem); % original code
+        state = d2d_asr_calibrate(ref_section.data,ref_section.srate,cutoff, [], [], [], [], [], [], [], maxmem);
     end
 end
 clear ref_section;

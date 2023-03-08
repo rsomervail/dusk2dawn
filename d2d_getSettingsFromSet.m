@@ -22,9 +22,8 @@ function d2d_getSettingsFromSet
     % loop through CFG options and update figure accordingly ? could probs condense literally any option here to an if statement on "style"
     fig = gcf;
     for k = 1:length(fig.Children) % ? I could probably manually update all options inside this figure here, not sure about popups though
+%         fig.Children(k).Tag % for plotting fields
         switch fig.Children(k).Tag
-
-            
 
             case 'splitBySlidingWindow'
                 fig.Children(k).Value = cfg.splitBySlidingWindow;
@@ -54,9 +53,13 @@ function d2d_getSettingsFromSet
                 fig.Children(k).String = [ '[ ' num2str(cfg.chunk_len) ' ]' ];
             case 'savePath'
                 fig.Children(k).String = cfg.savePath;
-            otherwise 
-%                 fig.Children(k).Tag
-%                 a = 1;
+%             otherwise 
+%                 switch fig.Children(k).Style
+%                     case 'edit'
+% 
+%                     case 'check'
+%                         
+%                 end
         end
     end
 
@@ -65,6 +68,7 @@ function d2d_getSettingsFromSet
     evalin("caller", sprintf(' cfg_asr.ref_maxbadchannels = ''%s''    ;', [ '[ ' num2str(cfg.ref_maxbadchannels*100) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.asr_windowlength = ''%s''    ;', [ '[ ' num2str(cfg.asr_windowlength) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.asr_useGPU = %s;', num2str(cfg.asr_useGPU) )  );
+    evalin("caller", sprintf(' cfg_asr.asr_MaxMem = ''%s''    ;', [ '[ ' num2str(cfg.asr_MaxMem) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.chunk_overlap = ''%s''    ;', [ '[ ' num2str(cfg.chunk_overlap) ' ]' ])  );
     
     % handle also advanced settings - valid

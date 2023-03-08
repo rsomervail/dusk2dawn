@@ -427,6 +427,7 @@ cfg.ref_maxbadchannels  = cfg.ref_maxbadchannels / 100; % convert MaxBadChannels
 evalc([ 'cfg.ref_tolerances = ' cfg.ref_tolerances ]);
 evalc([ 'cfg.asr_cutoff = ' cfg.asr_cutoff ]);   %#ok<*EVLEQ> 
 evalc([ 'cfg.asr_windowlength = ' cfg.asr_windowlength ]);   %#ok<*EVLEQ> 
+evalc([ 'cfg.asr_MaxMem = ' cfg.asr_MaxMem ]);   %#ok<*EVLEQ> 
 
 % validation settings - fft
 cfg.fft.run = cfg.fft_run; cfg = rmfield(cfg,'fft_run');

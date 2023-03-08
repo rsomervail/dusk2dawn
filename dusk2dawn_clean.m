@@ -25,7 +25,7 @@ flds = fields(cfg); pars.labels = {}; pars.values = {};
 for f = 1:length(flds)
     
     % get number of expected dimensions
-    if     any( strcmp(flds{f}, {'asr_cutoff','asr_windowlength','ref_maxbadchannels','chunk_len','chunk_overlap'}) ) % 1D variables
+    if     any( strcmp(flds{f}, {'asr_cutoff','asr_windowlength','ref_maxbadchannels','chunk_len','chunk_overlap','asr_MaxMem'}) ) % 1D variables
         expdim = 1;
     elseif any( strcmp(flds{f}, {'ref_tolerances' }) ) % 2D variables
         expdim = 2;

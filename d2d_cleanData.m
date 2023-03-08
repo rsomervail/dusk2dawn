@@ -35,6 +35,7 @@ if ~isfield(cfg,'asr_MaxMem')
     end
 end
 
+difftol = 1e-3; % difference in EEG amplitude to be considered a "changed timepoint" after ASR
 
 %% load dataset from disk if no variable was passed in from memory  
 if isempty(EEG)
@@ -124,7 +125,8 @@ if cfg.splitBySlidingWindow
     
     %% compute general ASR stats 
     % find altered timepoints and compute proportion 
-    cfgout.pointsCleaned = any( EEG_out.data ~= EEG.data );  
+    cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)>difftol );  % ? this is very light rel to real data so storing is fine and worthwhile
+%     cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)  );  
     cfgout.propCleaned =  100 * sum(cfgout.pointsCleaned) / EEG.pnts; 
 
     % compute variance removed (% of GFP summed across time) 
@@ -213,7 +215,8 @@ else
     
     %% compute general ASR stats
     % find altered timepoints and compute proportion 
-    cfgout.pointsCleaned = any( EEG_out.data ~= EEG.data );  % ? this is very light rel to real data so storing is fine and worthwhile
+    cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)>difftol );  % ? this is very light rel to real data so storing is fine and worthwhile
+%     cfgout.pointsCleaned = any( EEG_out.data ~= EEG.data );  % ? this is very light rel to real data so storing is fine and worthwhile
     cfgout.propCleaned =  100 * sum(cfgout.pointsCleaned) / EEG.pnts; 
 
     % compute variance removed (% of GFP summed across time) 

@@ -22,16 +22,20 @@ allFiles = {EEG.filename};
 
 %% handle varied parameters
 flds = fields(cfg); pars.labels = {}; pars.values = {};
+% flds( cellfun(@(x) any(strcmp(x,{''})) , flds ) ) = []; % remove things that can't be varied  ? ONLY if I later make the line 29 bit more permissive for flexibility
 for f = 1:length(flds)
     
     % get number of expected dimensions
-    if     any( strcmp(flds{f}, {'asr_cutoff','asr_windowlength','ref_maxbadchannels','chunk_len','chunk_overlap','asr_MaxMem'}) ) % 1D variables
+    if     any( strcmp(flds{f}, {'asr_cutoff','asr_windowlength','ref_maxbadchannels', ...
+            'chunk_len', 'ref_maxbadchannels', ...
+            'chunk_overlap','asr_MaxMem','asr_maxdims','asr_UseRiemannian'}) ) % 1D variables
         expdim = 1;
     elseif any( strcmp(flds{f}, {'ref_tolerances' }) ) % 2D variables
         expdim = 2;
     else
         continue % skip any variables that can't be varied
-    end
+%         expdim = 1; % assuming anything can be varied, but will need to be explicitly coded if expected dimension is not 1
+    end               % ? note that this is dangerous with line 25 edit
     
     % check if variable was varied
     if sum( size( cfg.(flds{f}) )>1 ) == expdim

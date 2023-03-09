@@ -11,7 +11,7 @@ function d2d_getSettingsFromSet
 
     
     % choose file & get cfg from the chosen file
-    [filename, filepath] = uigetfile('MultiSelect','off','*.set');
+    [filename, filepath] = uigetfile('MultiSelect','off','*.set', 'Choose a file previously cleaned by D2D');
     info = pop_loadset('filename',filename,'filepath',filepath,'loadmode','info');
     cfg = info.etc.dusk2dawn.cfg;
     
@@ -66,8 +66,11 @@ function d2d_getSettingsFromSet
     % handle also advanced settings - ASR
     evalin("caller", sprintf(' cfg_asr.ref_tolerances = ''%s''    ;', [ '[ ' num2str(cfg.ref_tolerances) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.ref_maxbadchannels = ''%s''    ;', [ '[ ' num2str(cfg.ref_maxbadchannels*100) ' ]' ])  );
+    evalin("caller", sprintf(' cfg_asr.ref_wndlen = ''%s''    ;', [ '[ ' num2str(cfg.ref_wndlen) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.asr_windowlength = ''%s''    ;', [ '[ ' num2str(cfg.asr_windowlength) ' ]' ])  );
+    evalin("caller", sprintf(' cfg_asr.asr_maxdims = ''%s''    ;', [ '[ ' num2str(cfg.asr_maxdims) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.asr_useGPU = %s;', num2str(cfg.asr_useGPU) )  );
+    evalin("caller", sprintf(' cfg_asr.asr_UseRiemannian = %s;', num2str(cfg.asr_UseRiemannian) )  );
     evalin("caller", sprintf(' cfg_asr.asr_MaxMem = ''%s''    ;', [ '[ ' num2str(cfg.asr_MaxMem) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.chunk_overlap = ''%s''    ;', [ '[ ' num2str(cfg.chunk_overlap) ' ]' ])  );
     

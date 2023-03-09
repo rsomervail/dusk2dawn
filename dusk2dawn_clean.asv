@@ -22,15 +22,17 @@ allFiles = {EEG.filename};
 
 %% handle varied parameters
 flds = fields(cfg); pars.labels = {}; pars.values = {};
+flds( cellfun(@(x) any(strcmp) , flds ) = [];
 for f = 1:length(flds)
     
     % get number of expected dimensions
-    if     any( strcmp(flds{f}, {'asr_cutoff','asr_windowlength','ref_maxbadchannels','chunk_len','chunk_overlap'}) ) % 1D variables
-        expdim = 1;
-    elseif any( strcmp(flds{f}, {'ref_tolerances' }) ) % 2D variables
+%     if     any( strcmp(flds{f}, {'asr_cutoff','asr_windowlength','ref_maxbadchannels','chunk_len','chunk_overlap','asr_MaxMem','asr_UseRiemannian'}) ) % 1D variables
+%         expdim = 1;
+    if any( strcmp(flds{f}, {'ref_tolerances' }) ) % 2D variables
         expdim = 2;
     else
-        continue % skip any variables that can't be varied
+        expdim = 1; % assuming anything can be varied, but will need to be explicitly coded if expected dimension is not 1
+%         continue % skip any variables that can't be varied
     end
     
     % check if variable was varied
@@ -175,7 +177,10 @@ for f = 1:nfiles
     end
     
     %% run validation on raw data for reference
+    fprintf([ repmat('-', 1,200) '\n\n']);
     fprintf('%s: computing validation metrics on raw data as a baseline\n\n',mfilename)
+    fprintf([ repmat('-', 1,200) '\n\n']);
+
     % loop through sleep stages 
     if cfg.splitByStage
         for st = 1:nstages
@@ -236,6 +241,11 @@ for f = 1:nfiles
         EEG = d2d_saveDataset(EEG, ctemp); % keep if not splitting by stage
         
     end % end if split by stages
+
+    fprintf(['\n' repmat('-', 1,200) '\n\n']);
+    fprintf('%s: computed validation metrics on raw data as a baseline\n',mfilename)
+    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
+    fprintf(['\n' repmat('-', 1,200) '\n\n']);
     
     %% loop through all varied parameters & clean data
     cfg2 = rmfield( cfg, 'savePath' ); % make copy for ASR cleaning which shouldn't save the files until after validation

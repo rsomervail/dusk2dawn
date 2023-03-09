@@ -23,7 +23,7 @@ if ~isfield(cfg,'checkCalibManual_channels'),  cfg.checkCalibManual_channels = [
 if ~isfield(cfg,'ref_maxbadchannels'),   cfg.ref_maxbadchannels   = false; end
 if ~isfield(cfg,'ref_tolerances'),   cfg.ref_tolerances   = false; end
 if ~isfield(cfg,'ref_wndlen'),   cfg.ref_wndlen   = []; end
-if ~isfield(cfg,'asr_useRiemmanian'),   cfg.asr_useRiemmanian   = false; end
+if ~isfield(cfg,'asr_UseRiemannian'),   cfg.asr_UseRiemannian   = false; end
 if ~isfield(cfg,'asr_windowlength'),   cfg.asr_windowlength   = []; end
 if ~isfield(cfg,'asr_maxdims'),   cfg.asr_maxdims   = 2/3; end
 if ~isfield(cfg,'asr_useGPU'),   cfg.asr_useGPU   = false; end
@@ -35,7 +35,8 @@ if ~isfield(cfg,'asr_MaxMem')
     end
 end
 
-difftol = 1e-3; % difference in EEG amplitude to be considered a "changed timepoint" after ASR
+% difftol = 1e-3; % difference in EEG amplitude to be considered a "changed timepoint" after ASR
+% ? using logical comparison instead because maybe more appropriate (since points are either changed or not by ASR)
 
 %% load dataset from disk if no variable was passed in from memory  
 if isempty(EEG)
@@ -112,7 +113,7 @@ if cfg.splitBySlidingWindow
 
         %% run ASR cleaning <----------------------------------------------------------------
         EEG_chunk_cleaned = d2d_clean_asr( EEG_chunk, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
-                   ref_section,[],[], cfg.asr_useGPU , cfg.asr_useRiemmanian, cfg.asr_MaxMem ); 
+                   ref_section,[],[], cfg.asr_useGPU , cfg.asr_UseRiemannian, cfg.asr_MaxMem ); 
         
         %% insert chunk into output data structure
         % take average of this cleaned chunk and any segment of overlapping data that may have already been processed
@@ -125,8 +126,8 @@ if cfg.splitBySlidingWindow
     
     %% compute general ASR stats 
     % find altered timepoints and compute proportion 
-    cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)>difftol );  % ? this is very light rel to real data so storing is fine and worthwhile
-%     cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)  );  
+%     cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)>difftol );  % ? this is very light rel to real data so storing is fine and worthwhile
+    cfgout.pointsCleaned = any( EEG_out.data ~= EEG.data  );  
     cfgout.propCleaned =  100 * sum(cfgout.pointsCleaned) / EEG.pnts; 
 
     % compute variance removed (% of GFP summed across time) 
@@ -209,14 +210,14 @@ else
     fprintf('running ASR cleaning ...\n')
     tin_asr = tic;
         EEG_out = d2d_clean_asr( EEG, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
-                       ref_section,[],[], cfg.asr_useGPU , cfg.asr_useRiemmanian, cfg.asr_MaxMem ); 
+                       ref_section,[],[], cfg.asr_useGPU , cfg.asr_UseRiemannian, cfg.asr_MaxMem ); 
     cfgout.tElapsed = toc(tin_asr);
     fprintf( '... cleaning completed in %.2f mins\n\n', cfgout.tElapsed/60 ) 
     
     %% compute general ASR stats
     % find altered timepoints and compute proportion 
-    cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)>difftol );  % ? this is very light rel to real data so storing is fine and worthwhile
-%     cfgout.pointsCleaned = any( EEG_out.data ~= EEG.data );  % ? this is very light rel to real data so storing is fine and worthwhile
+%     cfgout.pointsCleaned = any( abs(EEG_out.data - EEG.data)>difftol );  % ? this is very light rel to real data so storing is fine and worthwhile
+    cfgout.pointsCleaned = any( EEG_out.data ~= EEG.data );  % ? this is very light rel to real data so storing is fine and worthwhile
     cfgout.propCleaned =  100 * sum(cfgout.pointsCleaned) / EEG.pnts; 
 
     % compute variance removed (% of GFP summed across time) 

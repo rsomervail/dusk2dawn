@@ -96,6 +96,8 @@ function [outdata,outstate, Y] = d2d_asr_process_r(data,srate,state,windowlen,lo
 % Adapted by Richard Somervail, 2023
 % Dusk2Dawn plugin for EEGLAB
 % This is a local copy to ensure D2D will always work with a compatible version of the ASR functions
+% changes:
+%   - used evalc to supress all the nasty outputs from the rasr_nonlinear_eigenspace function. (hopefully these aren't crucial!)
 
 disp('THIS IS RIEMANN ADAPTED PROCESSING!!!');
 if nargin < 4 || isempty(windowlen)
@@ -176,7 +178,8 @@ for i=1:splits
        
         % function from manopt toolbox, adapted to this use case. manopt needs to be in the path
         %[V1,D1] = eig(Xcov)
-        [V, D] = rasr_nonlinear_eigenspace(Xcov, C);
+%         [V, D] = rasr_nonlinear_eigenspace(Xcov, C); % original code
+        evalc('[V, D] = rasr_nonlinear_eigenspace(Xcov, C);'); % RS edit
         % use eigenvalues in descending order
         [D, order] = sort(reshape(diag(D),1,C));
         % to sort the eigenvectors, here the vectors computed on the manifold

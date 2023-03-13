@@ -145,7 +145,7 @@ else
     
     %% find initial calibration data  
     if isfield(cfg,'ref_mask') % check if this has been provided already by the user
-        fprintf('d2d_cleanData: using previously-generated calibration data\n')
+        fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency *** <---------\n')
         ref_mask = cfg.ref_mask; % important to have local variable here so it later gets outputted again
         evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
     else % if no calibration data is provided by the user
@@ -212,7 +212,7 @@ else
         EEG_out = d2d_clean_asr( EEG, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
                        ref_section,[],[], cfg.asr_useGPU , cfg.asr_UseRiemannian, cfg.asr_MaxMem ); 
     cfgout.tElapsed = toc(tin_asr);
-    fprintf( '... cleaning completed in %.2f mins\n\n', cfgout.tElapsed/60 ) 
+    fprintf( '... cleaning completed in %.2f mins\n', cfgout.tElapsed/60 ) 
     
     %% compute general ASR stats
     % find altered timepoints and compute proportion 

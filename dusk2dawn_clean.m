@@ -146,11 +146,6 @@ end % p3
 tIN = tic;
 for f = 1:nfiles
 
-    %% make empty cell array to store logical masks for reference data for this dataset
-    if npars > 0
-        ref_masks = cell(ref_dims(1),ref_dims(2),ref_dims(3));
-    end
-
     %% get dataset
     EEG = EEG_all(f);
     cur_setname = EEG.setname;
@@ -188,6 +183,17 @@ for f = 1:nfiles
         end
         clear EEG % save RAM by clearing non-split version of the data 
     end
+
+    %% if computing multiple runthroughs with different parameters, then make empty cell array to store logical masks for reference data for this dataset
+    if npars > 0       % so that ref data can be reused in multiple runthroughs
+        ref_masks = cell(ref_dims(1),ref_dims(2),ref_dims(3));
+
+        % if splitting by sleep stage then initialise the 2nd level cell arrays to store reused ref_masks for each stage
+        if cfg.splitByStage % (if there are even multiple runthroughs we need to store calibration data for)
+            ref_masks = cellfun( @(x) cell(1,nstages) ,ref_masks,'UniformOutput' ,false);
+        end
+    end
+
     
     %% run validation on raw data for reference
     fprintf([ repmat('-', 1,200) '\n\n']);
@@ -312,20 +318,36 @@ for f = 1:nfiles
                     fprintf([ 'varied parameters: ' str ],mfilename)
                     fprintf(['\n' repmat('-', 1,200) '\n\n']);
                 end
-                
-                % loop through sleep stages
+
+                %% get indices for accessing reused calibration data masks
+                if npars > 0
+                    r1 = min(p1,size(ref_masks,1)); % if this varied parameter allows reusing the same ref_mask then index 1
+                    r2 = min(p2,size(ref_masks,2)); % if not then index the correct element with the current param value 
+                    r3 = min(p3,size(ref_masks,3)); % (min because if length of that ref_mask dimension is 1 then this will ensure index with 1)
+                end
+
+                %% check if splitting by stage and branch accordingly 
                 if cfg.splitByStage
+
+                    % loop through stages
                     for st = 1:nstages
 
-%                         % use already-generated calibration mask if it is compatible
-%                         if flag_reuseCalibData
-%                             if count > 1 % if not first file
-%                                 cfg2.ref_mask = cfg2_out(st).ref_mask;
-%                             end
-%                         end
+                        % check for existing ref_mask for this set of pars & stage
+                        if npars > 0
+                            if ~isempty(ref_masks{r1,r2,r3}{st}) 
+                                cfg2.ref_mask = ref_masks{r1,r2,r3}{st};
+                            end
+                        end
         
                         % run actual cleaning with the chosen parameters
                         [EEG_cleaned(st), cfg2_out(st)] = d2d_cleanData(EEG_stages(st), cfg2);
+
+                        % store calibration mask in appropriate place (if not already done for this set of pars & stage)
+                        if npars > 0 
+                            if isempty(ref_masks{r1,r2,r3}{st}) 
+                                ref_masks{r1,r2,r3}{st} = cfg2_out(st).ref_mask;
+                            end
+                        end
     
                         % run ICA for this stage
                         if cfg.ica.run
@@ -334,21 +356,20 @@ for f = 1:nfiles
                         
                         % run validation for this stage
                         [EEG_cleaned(st), ~] = d2d_validateCleaning(EEG_cleaned(st), cfg);
-    
+                        
+                        fprintf('\n')
                     end
                     
                     % recombine stages of cleaned data
                     EEG_cleaned = d2d_recombineByStage(EEG_cleaned, EEG_dummy);
                     valid(count,:) = EEG_cleaned.etc.dusk2dawn.valid; % extract validation across stages for later merging
+
+                    fprintf('\n\n')
                     
                 else % not splitting by stages
 
-                    % get indices for checking for existing mask for reference data
+                    % check for existing ref_mask for this set of pars
                     if npars > 0
-                        r1 = min(p1,size(ref_masks,1)); % if this varied parameter allows reusing the same ref_mask then index 1
-                        r2 = min(p2,size(ref_masks,2)); % if not then index the correct element with the current param value 
-                        r3 = min(p3,size(ref_masks,3)); % (min because if length of that ref_mask dimension is 1 then this will ensure index with 1)
-                        % check for existing ref_mask for this set of pars
                         if ~isempty(ref_masks{r1,r2,r3}) 
                             cfg2.ref_mask = ref_masks{r1,r2,r3};
                         end
@@ -357,7 +378,7 @@ for f = 1:nfiles
                     % run actual cleaning with the chosen parameters
                     [EEG_cleaned, cfg2_out] = d2d_cleanData(EEG, cfg2);
 
-                    % store calibration mask in appropriate place (if not already done)
+                    % store calibration mask in appropriate place (if not already done for this set of pars)
                     if npars > 0 
                         if isempty(ref_masks{r1,r2,r3})
                             ref_masks{r1,r2,r3} = cfg2_out.ref_mask;
@@ -372,6 +393,7 @@ for f = 1:nfiles
                     % run validation 
                     [EEG_cleaned, valid(count)] = d2d_validateCleaning(EEG_cleaned, cfg); 
     
+                    fprintf('\n')
                 end % end if split by stages
     
                 % save cleaned dataset

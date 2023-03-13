@@ -80,6 +80,7 @@ if cfg.splitBySlidingWindow
     % outputs
     cfgout.chunks  = chunks;
     cfgout.nchunks = nchunks;
+    cfgout.ref_mask = cell(1,nchunks);
     
     % prepare chunk variable
     EEG_chunk = EEG; EEG_chunk.data = [];
@@ -93,23 +94,31 @@ if cfg.splitBySlidingWindow
     fprintf('running ASR cleaning ...\n')
     tin_asr = tic;
     for ch = 1 : nchunks
+        fprintf('chunk %d/%d - cleaning ...\n', ch, nchunks )
         
         %% get chunk
         EEG_chunk.data = EEG.data( :, chunks(ch,1):chunks(ch,2) );
 
-        %% get calibration data        
-        evalc([ ' [ref_section, ref_mask] = d2d_clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
-        
+        %% get calibration data
+        if isfield(cfg,'ref_mask') % check if this has been provided already by the user
+            fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency ***\n')
+            ref_mask = cfg.ref_mask{ch}; % important to have local variable here so it later gets outputted again
+            evalc(' ref_section = pop_select(EEG_chunk, ''point'', logical2indices(ref_mask)); ');
+        else
+            fprintf('d2d_cleanData: finding data to use for calibration ...\n')
+            evalc( ' [ref_section, ref_mask] = d2d_clean_windows(EEG_chunk, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' );
+        end
+
         %% check calibration data are an adequate length
-        calibLen = size(ref_section.times,2) / ref_section.srate; % compute calibration data length in seconds
+        calibLen = size(ref_section.times,2) / ref_section.srate; %#ok<NODEF> % compute calibration data length in seconds
         fprintf('d2d_cleanData: using %.2f mins of calibration data ...\n', calibLen/60)
         if      calibLen < 60
-            warning('d2d_cleanData: chosen calibration data are shorter than a minute, this is not ideal -> consider increasing chunk length')
+            warning('d2d_cleanData: found calibration data are shorter than a minute, this is not ideal -> consider increasing chunk length')
         elseif  calibLen < 15
             error('Error: chosen calibration data are shorter than 15 seconds, this is not adequate -> increase chunk length')
         end
         cfgout.calibDataLen(ch)    = calibLen; 
-        cfgout.calibDataMask{ch}   = ref_mask;
+        cfgout.ref_mask{ch}   = ref_mask;
 
         %% run ASR cleaning <----------------------------------------------------------------
         EEG_chunk_cleaned = d2d_clean_asr( EEG_chunk, cfg.asr_cutoff, cfg.asr_windowlength,[],cfg.asr_maxdims,     ...
@@ -119,7 +128,7 @@ if cfg.splitBySlidingWindow
         % take average of this cleaned chunk and any segment of overlapping data that may have already been processed
         EEG_out.data(:, chunks(ch,1):chunks(ch,2) ) = mean( cat( 3, EEG_out.data(:, chunks(ch,1):chunks(ch,2) ), EEG_chunk_cleaned.data ), 3 ,'omitnan'); 
         
-        fprintf('chunk %d/%d (%.1f%%) completed ...\n\n', ch, nchunks, 100*ch/nchunks )
+        fprintf('chunk %d/%d - completed (%.1f%%)\n\n', ch, nchunks, 100*ch/nchunks )
     end % chunk loop
     cfgout.tElapsed = toc(tin_asr);
     fprintf( '... cleaning completed in %.2f mins\n\n', cfgout.tElapsed/60) 
@@ -143,9 +152,9 @@ if cfg.splitBySlidingWindow
 %% if cleaning whole dataset in one chunk
 else  
     
-    %% find initial calibration data  
+    %% find calibration data  
     if isfield(cfg,'ref_mask') % check if this has been provided already by the user
-        fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency *** <---------\n')
+        fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency ***\n')
         ref_mask = cfg.ref_mask; % important to have local variable here so it later gets outputted again
         evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
     else % if no calibration data is provided by the user

@@ -406,7 +406,7 @@ for f = 1:nfiles
                 if npars > 0
                     fprintf(['\n' repmat('-', 1,200) '\n']);
                     fprintf([ '%s: cleaning dataset: "%s" - runthrough: %02d/%02d   -   END'  '\n'],mfilename, cur_setname, count, np1*np2*np3 );
-                    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
+                    fprintf('total time elapsed = %.1f mins',toc(tIN)/60)
                     fprintf(['\n' repmat('-', 1,200) '\n\n']);
                 end
 
@@ -438,6 +438,9 @@ for f = 1:nfiles
     
     % output raw data with validation structure added  (no need to resave header with this info because its done in the d2d_validateMerge function)
     EEG.etc.dusk2dawn.valid_merged = valid_merged;
+
+    % add ref_masks used for each runthrough
+    EEG.etc.dusk2dawn.ref_masks = ref_masks;
 
     % reinsert into EEG_all
     if ~isempty(dataflag)

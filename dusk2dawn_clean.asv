@@ -146,16 +146,6 @@ end % p3
 tIN = tic;
 for f = 1:nfiles
 
-    %% if computing multiple runthroughs, then make empty cell array to store logical masks for reference data for this dataset
-    if npars > 0       % so that ref data can be reused in multiple runthroughs
-        ref_masks = cell(ref_dims(1),ref_dims(2),ref_dims(3));
-
-        % if splitting by sleep stage then first initialise the cell arrays to store reused ref_masks for each stage
-        if cfg.splitByStage % (if there are even multiple runthroughs we need to store calibration data for)
-            ref_masks = cellfun( @(x) cell(1,nstages) ,ref_masks,'UniformOutput' ,false);
-        end
-    end
-
     %% get dataset
     EEG = EEG_all(f);
     cur_setname = EEG.setname;
@@ -193,6 +183,17 @@ for f = 1:nfiles
         end
         clear EEG % save RAM by clearing non-split version of the data 
     end
+
+    %% if computing multiple runthroughs with different parameters, then make empty cell array to store logical masks for reference data for this dataset
+    if npars > 0       % so that ref data can be reused in multiple runthroughs
+        ref_masks = cell(ref_dims(1),ref_dims(2),ref_dims(3));
+
+        % if splitting by sleep stage then initialise the 2nd level cell arrays to store reused ref_masks for each stage
+        if cfg.splitByStage % (if there are even multiple runthroughs we need to store calibration data for)
+            ref_masks = cellfun( @(x) cell(1,nstages) ,ref_masks,'UniformOutput' ,false);
+        end
+    end
+
     
     %% run validation on raw data for reference
     fprintf([ repmat('-', 1,200) '\n\n']);
@@ -405,7 +406,7 @@ for f = 1:nfiles
                 if npars > 0
                     fprintf(['\n' repmat('-', 1,200) '\n']);
                     fprintf([ '%s: cleaning dataset: "%s" - runthrough: %02d/%02d   -   END'  '\n'],mfilename, cur_setname, count, np1*np2*np3 );
-                    fprintf('total time elapsed = %.1f mins\n',toc(tIN)/60)
+                    fprintf('total time elapsed = %.1f mins',toc(tIN)/60)
                     fprintf(['\n' repmat('-', 1,200) '\n\n']);
                 end
 

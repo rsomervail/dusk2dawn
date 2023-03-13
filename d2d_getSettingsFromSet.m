@@ -64,13 +64,17 @@ function d2d_getSettingsFromSet
     end
 
     % handle also advanced settings - ASR
-    evalin("caller", sprintf(' cfg_asr.ref_tolerances = ''%s''    ;', [ '[ ' num2str(cfg.ref_tolerances) ' ]' ])  );
+    str_ref_tolerances = '';
+    for k = 1:size(cfg.ref_tolerances,2) % because 2D need to handle this par differently
+        str_ref_tolerances = [ str_ref_tolerances,  regexprep(num2str(cfg.ref_tolerances(:,k)'),'\s*',',')  ';' ];
+    end
+    evalin("caller", sprintf(' cfg_asr.ref_tolerances = ''%s''    ;', [ '[ ' str_ref_tolerances ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.ref_maxbadchannels = ''%s''    ;', [ '[ ' num2str(cfg.ref_maxbadchannels*100) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.ref_wndlen = ''%s''    ;', [ '[ ' num2str(cfg.ref_wndlen) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.asr_windowlength = ''%s''    ;', [ '[ ' num2str(cfg.asr_windowlength) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.asr_maxdims = ''%s''    ;', [ '[ ' num2str(cfg.asr_maxdims) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.asr_useGPU = %s;', num2str(cfg.asr_useGPU) )  );
-    evalin("caller", sprintf(' cfg_asr.asr_UseRiemannian = %s;', num2str(cfg.asr_UseRiemannian) )  );
+    evalin("caller", sprintf(' cfg_asr.asr_UseRiemannian = ''%s'';', num2str(cfg.asr_UseRiemannian) )  );
     evalin("caller", sprintf(' cfg_asr.asr_MaxMem = ''%s''    ;', [ '[ ' num2str(cfg.asr_MaxMem) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.chunk_overlap = ''%s''    ;', [ '[ ' num2str(cfg.chunk_overlap) ' ]' ])  );
     

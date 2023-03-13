@@ -77,17 +77,23 @@ if npars >= 1, np1 = size(pars.values{1},2); else, np1 = 1; end
 if npars >= 2, np2 = size(pars.values{2},2); else, np2 = 1; end
 if npars == 3, np3 = size(pars.values{3},2); else, np3 = 1; end
 
-%% check whether it's appropriate to store mask containing data for calibration and reuse in each iteration
-if npars > 0 % this only matters if there are multiple varied parameters
-    % if not varying calibration data parameters & no sliding window
-    if     ~any(startsWith(pars.labels, 'ref_')) && ~cfg.splitBySlidingWindow  
-        flag_reuseCalibData = true;
-    else
-        flag_reuseCalibData = false;
+%% handle varied parameters which affect whether to reuse the mask of relatively clean calibration data
+
+if npars > 0 % if there are any varied pars then might need to reuse mask for reference data used for calibration
+    ref_pars = cellfun( @(x)  startsWith(x,{'ref_','chunk_'}), pars.labels);  % if varied parameter affects choice of calibration data
+    for p = 1:3 % loop through all 3 possible pars even if number of pars is less, because there is always a 3 par loop later
+        if p <= npars 
+            if ref_pars(p) 
+                ref_dims(p) = size(pars.values{p},2); % if there is a varied par which affects ref data mask then have one element for each value 
+            else
+                ref_dims(p) = 1; % length of varied pars which don't determine the ref_mask is 1 because always the same mask
+            end
+        else
+            ref_dims(p) = 1; % if there is no p'th varied par then just set that dim of ref_mask cell array to 1 anyway for easy indexing
+        end
     end
-else
-    flag_reuseCalibData = false;
 end
+
 
 %% generate all filenames that cleaned data will be saved as later ____________________________________________________________
 count = 1;
@@ -139,6 +145,11 @@ end % p3
 %% LOOP THROUGH DATASETS
 tIN = tic;
 for f = 1:nfiles
+
+    %% make empty cell array to store logical masks for reference data for this dataset
+    if npars > 0
+        ref_masks = cell(ref_dims(1),ref_dims(2),ref_dims(3));
+    end
 
     %% get dataset
     EEG = EEG_all(f);
@@ -306,12 +317,12 @@ for f = 1:nfiles
                 if cfg.splitByStage
                     for st = 1:nstages
 
-                        % use already-generated calibration mask if it is compatible
-                        if flag_reuseCalibData
-                            if count > 1 % if not first file
-                                cfg2.ref_mask = cfg2_out(st).ref_mask;
-                            end
-                        end
+%                         % use already-generated calibration mask if it is compatible
+%                         if flag_reuseCalibData
+%                             if count > 1 % if not first file
+%                                 cfg2.ref_mask = cfg2_out(st).ref_mask;
+%                             end
+%                         end
         
                         % run actual cleaning with the chosen parameters
                         [EEG_cleaned(st), cfg2_out(st)] = d2d_cleanData(EEG_stages(st), cfg2);
@@ -332,15 +343,26 @@ for f = 1:nfiles
                     
                 else % not splitting by stages
 
-                    % use already-generated calibration mask if it is compatible
-                    if flag_reuseCalibData
-                        if count > 1 % if not first file
-                            cfg2.ref_mask = cfg2_out.ref_mask;
+                    % get indices for checking for existing mask for reference data
+                    if npars > 0
+                        r1 = min(p1,size(ref_masks,1)); % if this varied parameter allows reusing the same ref_mask then index 1
+                        r2 = min(p2,size(ref_masks,2)); % if not then index the correct element with the current param value 
+                        r3 = min(p3,size(ref_masks,3)); % (min because if length of that ref_mask dimension is 1 then this will ensure index with 1)
+                        % check for existing ref_mask for this set of pars
+                        if ~isempty(ref_masks{r1,r2,r3}) 
+                            cfg2.ref_mask = ref_masks{r1,r2,r3};
                         end
                     end
     
                     % run actual cleaning with the chosen parameters
                     [EEG_cleaned, cfg2_out] = d2d_cleanData(EEG, cfg2);
+
+                    % store calibration mask in appropriate place (if not already done)
+                    if npars > 0 
+                        if isempty(ref_masks{r1,r2,r3})
+                            ref_masks{r1,r2,r3} = cfg2_out.ref_mask;
+                        end
+                    end
                     
                     % run ICA
                     if cfg.ica.run

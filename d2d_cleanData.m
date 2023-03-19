@@ -34,6 +34,7 @@ if ~isfield(cfg,'asr_MaxMem')
         cfg.asr_MaxMem = [];
     end
 end
+if ~isfield(cfg,'ref_maxtime'), cfg.ref_maxtime  = EEG.times(end); end
 
 % difftol = 1e-3; % difference in EEG amplitude to be considered a "changed timepoint" after ASR
 % ? using logical comparison instead because maybe more appropriate (since points are either changed or not by ASR)
@@ -99,14 +100,26 @@ if cfg.splitBySlidingWindow
         %% get chunk
         EEG_chunk.data = EEG.data( :, chunks(ch,1):chunks(ch,2) );
 
-        %% get calibration data
+        %% get relatively-clean reference data for calibration
         if isfield(cfg,'ref_mask') % check if this has been provided already by the user
+            
+            % get ref data mask
             fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency ***\n')
             ref_mask = cfg.ref_mask{ch}; % important to have local variable here so it later gets outputted again
+
+            % extract reference data
             evalc(' ref_section = pop_select(EEG_chunk, ''point'', logical2indices(ref_mask)); ');
+
         else
             fprintf('d2d_cleanData: finding data to use for calibration ...\n')
             evalc( ' [ref_section, ref_mask] = d2d_clean_windows(EEG_chunk, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' );
+
+            %% 
+            if cfg.ref_maxreftime < EEG.times(end)
+                warning '! dropout not coded yet for sliding window mode'
+                % ! will need to re-generate the ref_section using copied line 111
+            end
+            
         end
 
         %% check calibration data are an adequate length
@@ -117,7 +130,7 @@ if cfg.splitBySlidingWindow
         elseif  calibLen < 15
             error('Error: chosen calibration data are shorter than 15 seconds, this is not adequate -> increase chunk length')
         end
-        cfgout.calibDataLen(ch)    = calibLen; 
+        cfgout.calibDataLen(ch)  = calibLen; 
         cfgout.ref_mask{ch}   = ref_mask;
 
         %% run ASR cleaning <----------------------------------------------------------------
@@ -157,46 +170,89 @@ else
         fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency ***\n')
         ref_mask = cfg.ref_mask; % important to have local variable here so it later gets outputted again
         evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
+
     else % if no calibration data is provided by the user
         fprintf('d2d_cleanData: finding data to use for calibration ...\n')
         evalc([ ' [ref_section, ref_mask] = d2d_clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
 
-        % if manual check is active, edit the calibration selection
-        if cfg.checkCalibManual
-            fprintf('d2d_cleanData: plotting the automatically chosen calibration data -> check that the selected data are relatively clean\n (clear segments) and mark artifacts segments (in red)\n')
+        %% randomly dropout chunks of the data until ref data are under the maximum
+        if cfg.ref_maxtime < EEG.times(end)
             
-            % choose channels
-            if isempty(cfg.checkCalibManual_channels), cfg.checkCalibManual_channels = {EEG.chanlocs.labels}; end
-            if iscell(cfg.checkCalibManual_channels)
-                allChans = {EEG.chanlocs.labels};
-                [~, cfg.checkCalibManual_channels] = ismember(cfg.checkCalibManual_channels,allChans); clear allChans
+            % first remove any segments smaller than the asr_windowlength
+%             temp = [0 diff(ref_mask)];
+%             difs2 = diff(find(temp));
+            % ! try to find precisely each smaller segment of mask to remove
+            % ! plot something to explain that a minimum x of stuff has been removed
+           % ? maybe always do this? i.e. even if ref_maxtime isn't low
+
+            % second divide up the data into chunks of length asr_windowlength & sort randomly
+            winedges = 1 : round(cfg.asr_windowlength*EEG.srate) : EEG.pnts;
+            windy(:,1) = ([0, winedges(2:end-1)] + 1)';
+            windy(:,2) = winedges(2:end);
+            if windy(end,2) < EEG.pnts % if chunks don't cover whole data then make another chunk
+                windy(end+1,1) = windy(end,2)+1;
+                windy(end,2) = EEG.pnts;
             end
-            EEG2plot            = EEG; 
-            EEG2plot.chanlocs   = EEG.chanlocs(cfg.checkCalibManual_channels); 
-            EEG2plot.data       = EEG.data(cfg.checkCalibManual_channels,:);
-            EEG2plot.nbchan     = length(cfg.checkCalibManual_channels);
+            randindy = randperm(size(windy,1));
+            windy = windy(randindy,:);
             
-            % convert to fieldtrip and plot
-            EEG2plot_ft = eeglab2fieldtrip( EEG2plot, 'raw', 'none');
-            ctemp = [];
-            ctemp.artfctdef.visual.artifact = logical2indices(~ref_mask); % load in the automatically found calibration data
-            ctemp.continuous = 'yes';
-            switch cfg.checkCalibManual_plotStyle   % ! add to documentation
-                case 'butterfly'     
-                    ctemp.viewmode =  'butterfly'; ctemp.ylim = [-200 200];
-                case 'vertical'
-                    ctemp.viewmode =  'vertical'; ctemp.ylim  = [-(480.1*EEG2plot.nbchan^-0.8802) (480.1*EEG2plot.nbchan^-0.8802)]; 
+
+            %  then randomly remove one at a time until length of ref data is smaller than maximum
+            for h = 1:length(windy)
+
+                % remove a random chunk
+                ref_mask(windy(h,1):windy(h,2)) = false;
+
+                % check if reached below maximum ref length yet
+                reftime = 1000*sum(ref_mask)/EEG.srate; % convert from seconds to ms
+                perc_maxtime = reftime / EEG.times(end);
+                if reftime < cfg.ref_maxtime
+                    break    
+                end
             end
-            ctemp.blocksize  = 30; 
-            ctemp.continuous   = 'yes';
-                cfglay.elec = EEG2plot_ft.elec;
-            ctemp.layout = ft_prepare_layout( cfglay ); clear cfglay
-            ctemp = ft_databrowser(ctemp, EEG2plot_ft); % plot data and allow user to choose calibration data
-            
-            % get chosen calibration data
-            ref_mask = ~indices2logical( ctemp.artfctdef.visual.artifact, length(ref_mask) ); % take the points which are NOT marked as artifacts
-            ref_section = pop_select(EEG, 'point', logical2indices(ref_mask)); 
+            %    figure; plot( ref_mask ); ylim([-0.2,1.2])
+
+            % finally, remake the ref_section
+            evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
+
         end
+ 
+        %% if manual check is active, edit the calibration selection
+%         if cfg.checkCalibManual
+%             fprintf('d2d_cleanData: plotting the automatically chosen calibration data -> check that the selected data are relatively clean\n (clear segments) and mark artifacts segments (in red)\n')
+%             
+%             % choose channels
+%             if isempty(cfg.checkCalibManual_channels), cfg.checkCalibManual_channels = {EEG.chanlocs.labels}; end
+%             if iscell(cfg.checkCalibManual_channels)
+%                 allChans = {EEG.chanlocs.labels};
+%                 [~, cfg.checkCalibManual_channels] = ismember(cfg.checkCalibManual_channels,allChans); clear allChans
+%             end
+%             EEG2plot            = EEG; 
+%             EEG2plot.chanlocs   = EEG.chanlocs(cfg.checkCalibManual_channels); 
+%             EEG2plot.data       = EEG.data(cfg.checkCalibManual_channels,:);
+%             EEG2plot.nbchan     = length(cfg.checkCalibManual_channels);
+%             
+%             % convert to fieldtrip and plot
+%             EEG2plot_ft = eeglab2fieldtrip( EEG2plot, 'raw', 'none');
+%             ctemp = [];
+%             ctemp.artfctdef.visual.artifact = logical2indices(~ref_mask); % load in the automatically found calibration data
+%             ctemp.continuous = 'yes';
+%             switch cfg.checkCalibManual_plotStyle   % ! add to documentation
+%                 case 'butterfly'     
+%                     ctemp.viewmode =  'butterfly'; ctemp.ylim = [-200 200];
+%                 case 'vertical'
+%                     ctemp.viewmode =  'vertical'; ctemp.ylim  = [-(480.1*EEG2plot.nbchan^-0.8802) (480.1*EEG2plot.nbchan^-0.8802)]; 
+%             end
+%             ctemp.blocksize  = 30; 
+%             ctemp.continuous   = 'yes';
+%                 cfglay.elec = EEG2plot_ft.elec;
+%             ctemp.layout = ft_prepare_layout( cfglay ); clear cfglay
+%             ctemp = ft_databrowser(ctemp, EEG2plot_ft); % plot data and allow user to choose calibration data
+%             
+%             % get chosen calibration data
+%             ref_mask = ~indices2logical( ctemp.artfctdef.visual.artifact, length(ref_mask) ); % take the points which are NOT marked as artifacts
+%             ref_section = pop_select(EEG, 'point', logical2indices(ref_mask)); 
+%         end
     end % find calibration data
     
     %% generate logical mask of calibration data (if not generated in previous section) (for later validation & analysis)

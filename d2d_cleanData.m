@@ -34,7 +34,7 @@ if ~isfield(cfg,'asr_MaxMem')
         cfg.asr_MaxMem = [];
     end
 end
-if ~isfield(cfg,'ref_maxtime'), cfg.ref_maxtime  = EEG.times(end); end
+if ~isfield(cfg,'maxreftime'), cfg.maxreftime  = EEG.times(end); end
 
 % difftol = 1e-3; % difference in EEG amplitude to be considered a "changed timepoint" after ASR
 % ? using logical comparison instead because maybe more appropriate (since points are either changed or not by ASR)
@@ -174,19 +174,35 @@ else
     else % if no calibration data is provided by the user
         fprintf('d2d_cleanData: finding data to use for calibration ...\n')
         evalc([ ' [ref_section, ref_mask] = d2d_clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
-
+        fprintf('%s: found %.2f mins relatively clean data for calibration',mfilename,sum(ref_mask)/EEG.srate/60)
+    
         %% randomly dropout chunks of the data until ref data are under the maximum
-        if cfg.ref_maxtime < EEG.times(end)
+        data_duration = (EEG.pnts/EEG.srate); % get data duration in seconds
+        if cfg.maxreftime < data_duration
             
-            % first remove any segments smaller than the asr_windowlength
-%             temp = [0 diff(ref_mask)];
-%             difs2 = diff(find(temp));
-            % ! try to find precisely each smaller segment of mask to remove
-            % ! plot something to explain that a minimum x of stuff has been removed
-           % ? maybe always do this? i.e. even if ref_maxtime isn't low
+            % first remove random segments of ref data smaller than the asr_windowlength
+            ref_mask_old = ref_mask;
+            temp  = [0, ref_mask, 0];
+            tempdiffs = diff(temp);
+            indy = strfind(tempdiffs, 1);
+            lens  = strfind(tempdiffs, -1) - indy;
+            segs2remove = find(lens < cfg.asr_windowlength*EEG.srate);
+            if ~isempty(segs2remove)
+                for h = 1:length(segs2remove)
+                    % check if reached below maximum ref length yet
+                    reftime = sum(ref_mask)/EEG.srate; 
+                    if reftime < cfg.maxreftime
+                        break    
+                    end
+                    % remove this segment of reference data mask
+                    ref_mask( indy(segs2remove(h)) : indy(segs2remove(h))+lens(segs2remove(h)) ) = false;
+                end
+            end
+            fprintf('%s: removed %d random segments of ref data smaller than ASR window, leaving %.2f mins\n',mfilename, h-1, sum(ref_mask)/EEG.srate/60 )
 
             % second divide up the data into chunks of length asr_windowlength & sort randomly
             winedges = 1 : round(cfg.asr_windowlength*EEG.srate) : EEG.pnts;
+            clear windy
             windy(:,1) = ([0, winedges(2:end-1)] + 1)';
             windy(:,2) = winedges(2:end);
             if windy(end,2) < EEG.pnts % if chunks don't cover whole data then make another chunk
@@ -195,22 +211,22 @@ else
             end
             randindy = randperm(size(windy,1));
             windy = windy(randindy,:);
-            
-
             %  then randomly remove one at a time until length of ref data is smaller than maximum
             for h = 1:length(windy)
 
-                % remove a random chunk
-                ref_mask(windy(h,1):windy(h,2)) = false;
-
-                % check if reached below maximum ref length yet
-                reftime = 1000*sum(ref_mask)/EEG.srate; % convert from seconds to ms
-                perc_maxtime = reftime / EEG.times(end);
-                if reftime < cfg.ref_maxtime
+                %  check if reached below maximum ref length yet
+                reftime = sum(ref_mask)/EEG.srate; 
+                if reftime < cfg.maxreftime
                     break    
                 end
+
+                % if not then remove a random chunk
+                ref_mask(windy(h,1) : windy(h,2)) = false;
+
             end
             %    figure; plot( ref_mask ); ylim([-0.2,1.2])
+            fprintf('%s: removed %d random segments of ref data of same length as ASR window, leaving %.2f mins\n',mfilename, h-1, sum(ref_mask)/EEG.srate/60 )
+
 
             % finally, remake the ref_section
             evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');

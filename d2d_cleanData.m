@@ -34,7 +34,8 @@ if ~isfield(cfg,'asr_MaxMem')
         cfg.asr_MaxMem = [];
     end
 end
-if ~isfield(cfg,'maxreftime'), cfg.maxreftime  = EEG.times(end); end
+if ~isfield(cfg,'maxreftime'), cfg.maxreftime  = (EEG.pnts/EEG.srate); end
+if isempty(cfg.maxreftime), cfg.maxreftime  = (EEG.pnts/EEG.srate); end
 
 % difftol = 1e-3; % difference in EEG amplitude to be considered a "changed timepoint" after ASR
 % ? using logical comparison instead because maybe more appropriate (since points are either changed or not by ASR)
@@ -56,7 +57,7 @@ if cfg.splitBySlidingWindow
     %% misc stuff
     % check options make sense
     if cfg.chunk_len < 1
-        error 'd2d_cleanData: minimum reasonable chunk length is at least 1 minute (in order to have enough calibration data)'; 
+        error 'd2d_cleanData: minimum reasonable chunk length is at least 1 minute (in order to have enough reference data for calibration)'; 
     end
     if      cfg.chunk_overlap >= cfg.chunk_len
         error 'd2d_cleanData: overlap of cleaning chunks cannot be longer than the chunks themselves';
@@ -104,19 +105,19 @@ if cfg.splitBySlidingWindow
         if isfield(cfg,'ref_mask') % check if this has been provided already by the user
             
             % get ref data mask
-            fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency ***\n')
+            fprintf('d2d_cleanData: *** using previously-generated reference data for efficiency ***\n')
             ref_mask = cfg.ref_mask{ch}; % important to have local variable here so it later gets outputted again
 
             % extract reference data
             evalc(' ref_section = pop_select(EEG_chunk, ''point'', logical2indices(ref_mask)); ');
 
         else
-            fprintf('d2d_cleanData: finding data to use for calibration ...\n')
+            fprintf('d2d_cleanData: finding reference data to use for calibration ...\n')
             evalc( ' [ref_section, ref_mask] = d2d_clean_windows(EEG_chunk, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' );
 
             %% 
             if cfg.ref_maxreftime < EEG.times(end)
-                warning '! dropout not coded yet for sliding window mode'
+                error '! dropout not coded yet for sliding window mode'
                 % ! will need to re-generate the ref_section using copied line 111
             end
             
@@ -124,11 +125,11 @@ if cfg.splitBySlidingWindow
 
         %% check calibration data are an adequate length
         calibLen = size(ref_section.times,2) / ref_section.srate; %#ok<NODEF> % compute calibration data length in seconds
-        fprintf('d2d_cleanData: using %.2f mins of calibration data ...\n', calibLen/60)
+        fprintf('d2d_cleanData: using %.2f mins of reference data ...\n', calibLen/60)
         if      calibLen < 60
-            warning('d2d_cleanData: found calibration data are shorter than a minute, this is not ideal -> consider increasing chunk length')
+            warning('d2d_cleanData: found reference data are shorter than a minute, this is not ideal -> consider increasing chunk length')
         elseif  calibLen < 15
-            error('Error: chosen calibration data are shorter than 15 seconds, this is not adequate -> increase chunk length')
+            error('Error: chosen reference data are shorter than 15 seconds, this is not adequate -> increase chunk length')
         end
         cfgout.calibDataLen(ch)  = calibLen; 
         cfgout.ref_mask{ch}   = ref_mask;
@@ -167,14 +168,14 @@ else
     
     %% find calibration data  
     if isfield(cfg,'ref_mask') % check if this has been provided already by the user
-        fprintf('d2d_cleanData: *** using previously-generated calibration data for efficiency ***\n')
+        fprintf('d2d_cleanData: *** using previously-generated reference data for efficiency ***\n')
         ref_mask = cfg.ref_mask; % important to have local variable here so it later gets outputted again
         evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');
 
     else % if no calibration data is provided by the user
-        fprintf('d2d_cleanData: finding data to use for calibration ...\n')
+        fprintf('d2d_cleanData: finding reference data to use for calibration ...\n')
         evalc([ ' [ref_section, ref_mask] = d2d_clean_windows(EEG, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' ]);
-        fprintf('%s: found %.2f mins relatively clean data for calibration',mfilename,sum(ref_mask)/EEG.srate/60)
+        fprintf('%s: found %.2f mins relatively clean reference data for calibration\n',mfilename,sum(ref_mask)/EEG.srate/60)
     
         %% randomly dropout chunks of the data until ref data are under the maximum
         data_duration = (EEG.pnts/EEG.srate); % get data duration in seconds
@@ -187,6 +188,7 @@ else
             indy = strfind(tempdiffs, 1);
             lens  = strfind(tempdiffs, -1) - indy;
             segs2remove = find(lens < cfg.asr_windowlength*EEG.srate);
+            segs2remove = segs2remove(randperm(size(segs2remove,2)));
             if ~isempty(segs2remove)
                 for h = 1:length(segs2remove)
                     % check if reached below maximum ref length yet
@@ -198,7 +200,7 @@ else
                     ref_mask( indy(segs2remove(h)) : indy(segs2remove(h))+lens(segs2remove(h)) ) = false;
                 end
             end
-            fprintf('%s: removed %d random segments of ref data smaller than ASR window, leaving %.2f mins\n',mfilename, h-1, sum(ref_mask)/EEG.srate/60 )
+            fprintf('%s: removed %d random segments of reference data smaller than ASR window, leaving %.2f mins\n',mfilename, h-1, sum(ref_mask)/EEG.srate/60 )
 
             % second divide up the data into chunks of length asr_windowlength & sort randomly
             winedges = 1 : round(cfg.asr_windowlength*EEG.srate) : EEG.pnts;
@@ -225,8 +227,7 @@ else
 
             end
             %    figure; plot( ref_mask ); ylim([-0.2,1.2])
-            fprintf('%s: removed %d random segments of ref data of same length as ASR window, leaving %.2f mins\n',mfilename, h-1, sum(ref_mask)/EEG.srate/60 )
-
+            fprintf('%s: removed %d random segments of reference data of same length as ASR window, leaving %.2f mins\n',mfilename, h-1, sum(ref_mask)/EEG.srate/60 )
 
             % finally, remake the ref_section
             evalc(' ref_section = pop_select(EEG, ''point'', logical2indices(ref_mask)); ');

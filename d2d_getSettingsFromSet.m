@@ -77,6 +77,7 @@ function d2d_getSettingsFromSet
     evalin("caller", sprintf(' cfg_asr.asr_UseRiemannian = ''%s'';', num2str(cfg.asr_UseRiemannian) )  );
     evalin("caller", sprintf(' cfg_asr.asr_MaxMem = ''%s''    ;', [ '[ ' num2str(cfg.asr_MaxMem) ' ]' ])  );
     evalin("caller", sprintf(' cfg_asr.chunk_overlap = ''%s''    ;', [ '[ ' num2str(cfg.chunk_overlap) ' ]' ])  );
+    evalin("caller", sprintf(' cfg_asr.maxreftime = ''%s''    ;', [ '[ ' num2str(cfg.maxreftime) ' ]' ])  );
     
     % handle also advanced settings - valid
     % bin freqs

@@ -431,6 +431,7 @@ evalc([ 'cfg.asr_windowlength = ' cfg.asr_windowlength ]);   %#ok<*EVLEQ>
 evalc([ 'cfg.asr_maxdims = ' cfg.asr_maxdims ]);   %#ok<*EVLEQ> 
 evalc([ 'cfg.asr_UseRiemannian = ' cfg.asr_UseRiemannian ]);   %#ok<*EVLEQ> 
 evalc([ 'cfg.asr_MaxMem = ' cfg.asr_MaxMem ]);   %#ok<*EVLEQ> 
+evalc([ 'cfg.maxreftime = ' cfg.maxreftime ]);   %#ok<*EVLEQ> 
 
 % validation settings - fft
 cfg.fft.run = cfg.fft_run; cfg = rmfield(cfg,'fft_run');

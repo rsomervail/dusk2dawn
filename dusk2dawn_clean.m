@@ -28,7 +28,7 @@ for f = 1:length(flds)
     % get number of expected dimensions
     if     any( strcmp(flds{f}, {'asr_cutoff','asr_windowlength','ref_maxbadchannels', ...
             'chunk_len', 'ref_maxbadchannels', ...
-            'chunk_overlap','asr_MaxMem','asr_maxdims','asr_UseRiemannian'}) ) % 1D variables
+            'chunk_overlap','asr_MaxMem','asr_maxdims','asr_UseRiemannian', 'maxreftime'}) ) % 1D variables
         expdim = 1;
     elseif any( strcmp(flds{f}, {'ref_tolerances' }) ) % 2D variables
         expdim = 2;
@@ -80,7 +80,7 @@ if npars == 3, np3 = size(pars.values{3},2); else, np3 = 1; end
 %% handle varied parameters which affect whether to reuse the mask of relatively clean calibration data
 
 if npars > 0 % if there are any varied pars then might need to reuse mask for reference data used for calibration
-    ref_pars = cellfun( @(x)  startsWith(x,{'ref_','chunk_'}), pars.labels);  % if varied parameter affects choice of calibration data
+    ref_pars = cellfun( @(x)  startsWith(x,{'ref_','chunk_','maxreftime'}), pars.labels);  % if varied parameter affects choice of calibration data
     for p = 1:3 % loop through all 3 possible pars even if number of pars is less, because there is always a 3 par loop later
         if p <= npars 
             if ref_pars(p) 
@@ -440,7 +440,9 @@ for f = 1:nfiles
     EEG.etc.dusk2dawn.valid_merged = valid_merged;
 
     % add ref_masks used for each runthrough
-    EEG.etc.dusk2dawn.ref_masks = ref_masks;
+    if npars > 0
+        EEG.etc.dusk2dawn.ref_masks = ref_masks;
+    end
 
     % reinsert into EEG_all
     if ~isempty(dataflag)

@@ -10,6 +10,7 @@ Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB.
 		www.iannettilab.net      
 		  
 	History:  
+	22/03/2023 ver 3.0.0 Crucial bugfix to sliding window ASR, major efficiency upgrades, all ASR parameters now variable from GUI + additional D2D-specific features.  
 	09/03/2023 ver 2.1.0 Crucial bugfixes. Also added most ASR parameters + various quality of life improvements.  
 	06/03/2023 ver 2.0.1 Various quality of life upgrades (e.g. printing time elapsed for each dataset).
 	24/02/2023 ver 2.0.0 Added group-level/batch processing of multiple datasets.  

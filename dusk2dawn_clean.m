@@ -444,7 +444,7 @@ for f = 1:nfiles
         EEG.etc.dusk2dawn.ref_masks = ref_masks;
     end
 
-    % reinsert into EEG_all
+    % reinsert data/data-string into EEG_all
     if ~isempty(dataflag)
         EEG.data = dataflag;
     end

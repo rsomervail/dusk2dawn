@@ -116,7 +116,7 @@ if cfg.splitBySlidingWindow
             evalc( ' [ref_section, ref_mask] = d2d_clean_windows(EEG_chunk, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' );
 
             %% 
-            if cfg.ref_maxreftime < EEG.times(end)
+            if cfg.maxreftime < EEG.times(end)
                 error '! dropout not coded yet for sliding window mode'
                 % ! will need to re-generate the ref_section using copied line 111
             end

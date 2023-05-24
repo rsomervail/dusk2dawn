@@ -41,8 +41,7 @@ if isempty(EEG)
 end
 
 %% more defaults
-% if not explicitly specified to not validate ICA results, then do so if ICA was performed
-if ~isfield(cfg.ica,  'run'), cfg.ica.run  = EEG.etc.dusk2dawn.cfg.ica.run;  end
+if ~isfield(cfg.ica,  'run'), cfg.ica.run  = false;  end
 
 %% get ASR info from the dataset
 if EEG.etc.dusk2dawn.asr.raw == false

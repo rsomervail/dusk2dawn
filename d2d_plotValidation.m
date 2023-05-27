@@ -17,7 +17,8 @@ if nfiles > 1
     EEG = d2d_group_validateMerge(EEG);
 
     fprintf('\n%s: plotting effects of ASR on various validation metrics for the following datasets:\n',mfilename)
-    disp(EEG(1).etc.dusk2dawn.group.datasets')
+    disp({EEG(:).setname}')
+%     disp(EEG(1).etc.dusk2dawn.group.datasets') 
 else
     fprintf('\n%s: plotting effects of ASR on various validation metrics for dataset:\n%s\n',mfilename, EEG.setname)
 end

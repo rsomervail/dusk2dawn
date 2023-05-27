@@ -461,10 +461,10 @@ end % loop through datasets
 % output set of datasets appropriately processed
 EEG = EEG_all; % rename to EEG so it can be passed back out to master function
 
-% merge results of validation across the group
-if nfiles > 1
-    EEG = d2d_group_validateMerge(EEG);
-end
+% % merge results of validation across the group ? not necessary because this is handled by d2d_plotValidation anyway
+% if nfiles > 1
+%     EEG = d2d_group_validateMerge(EEG);
+% end
 
 fprintf('\n\n')
 fprintf('%s: finished cleaning all selected datasets\n',mfilename)

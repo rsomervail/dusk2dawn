@@ -205,6 +205,9 @@ sw.amp_median       = median(sw.waves, [1,2]);
 sw.tval_median      = median(sw.tval);
 sw.waves_median     = median(sw.waves, 2); % i.e. median in window around peak for each individual SW
 
+% remove all waveforms to save storage space
+sw = rmfield(sw,'waves');
+
 % outputs
 valid.sw = sw;  % store outputs
 tOUT_sw = toc(tIN_sw);

@@ -90,9 +90,13 @@ tIN_fft = tic;
 fft = cfg.fft; % get sub-structure
 
 % compute spectrum
-ents = EEG.event; ents(~strcmp({ents.type},'boundary')) = []; % find boundaries in data e.g. from splitByStage
-bounds = [ents.latency];
-if ~isempty(bounds)
+if ~isempty(EEG.event)
+    ents = EEG.event; ents(~strcmp({ents.type},'boundary')) = []; % find boundaries in data e.g. from splitByStage
+    bounds = [ents.latency];
+else
+    bounds = [];
+end
+if ~isempty(bounds) % looks messy but makes sense to have 2 conditionals here
     [fft.db,fft.freqs,~,~,~] = pop_spectopo(EEG, 1, [], 'EEG', 'plot','off', 'boundaries', bounds );
 else
     [fft.db,fft.freqs,~,~,~] = pop_spectopo(EEG, 1, [], 'EEG', 'plot','off');

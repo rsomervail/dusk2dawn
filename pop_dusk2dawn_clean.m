@@ -247,7 +247,7 @@ geo_d2d = { ...
 };
 vert_d2d = [ ...
     1 ... % split by sleep stage before ASR cleaning?
-    nents ... % stage codes listbox + instruction
+    min(nents,5) ... % stage codes listbox + instruction
     v0 ...
     veditbox1 ... % stage window editbox + instruction
     1 ... % run ASR in a sliding window?
@@ -298,7 +298,7 @@ vert_valid = [ ...
         vtitle1 ... % POST-CLEANING VALIDATION 
         1 ... % validation - FFT
         1 ... % validation - SW  
-        nents ...  % SW event selection box + % SW OR detect automatically checkbox
+        min(nents,5) ...  % SW event selection box + % SW OR detect automatically checkbox
         v2 ... % SW OR detect automatically checkbox
         1 ... % validation - ICA 
         1 ... % ** requires channel locations **

@@ -10,7 +10,7 @@
 function   out = advanced_popup_valid(in, plot, misc)
 
 % get channel list for SW channel selection
-fzs = strcmpi( misc.chans, 'FZ' );
+fzs = cellfun( @(x) contains(x, 'fz','IgnoreCase',true),  misc.chans );
 if any( fzs )
     sw_chan_default = find(fzs);
 else

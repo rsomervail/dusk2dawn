@@ -1,0 +1,204 @@
+%
+%
+%   Activated by the "Generate Script" button in GUI created by pop_dusk2dawn_clean
+%   Takes options from the GUI and generates a script you can use to automate your analysis.
+%   
+% 
+%       todo: 
+%           - add comment after each line of code w/ format of each input 
+%           - add same comments to documentation
+%           - loop through and format nicely by equalising number of spaces before "=" sign on each line
+% 
+% Dusk2Dawn
+% Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
+%           www.iannettilab.net
+%%
+function d2d_generateScript
+
+%% get cfg from pop_dusk2dawn_clean GUI
+
+% loop through CFG options and update figure accordingly ? could probs condense literally any option here to an if statement on "style"
+fig = gcf;
+cfg = struct;
+for k = length(fig.Children):-1:1 % ? I could probably manually update all options inside this figure here, not sure about popups though
+    temp = fig.Children(k);
+    if isa(temp, 'matlab.ui.control.UIControl')
+        if ~isempty(temp.Tag)
+            switch temp.Style
+                case {'pushbutton', 'text'} % skip these uicontrols which don't contain relevant parameters for cfg
+                case 'edit'
+                    cfg.(temp.Tag) = temp.String;
+                otherwise 
+                    cfg.(temp.Tag) = temp.Value;
+            end
+        end
+    end
+end
+
+%% get advanced settings from GUI scope
+cfg_valid   = evalin('caller','cfg_valid');
+cfg_asr     = evalin('caller','cfg_asr');
+cfg = updateCFG(cfg,cfg_valid);
+cfg = updateCFG(cfg,cfg_asr);
+
+%% reformat the GUI values so they are compatible with dusk2dawn_clean
+ents   = evalin('caller','ents');
+cfg = convert_cfg_gui2(cfg,ents);
+
+%% GENERATE SCRIPT TEXT - MAIN PARAMETERS
+
+str{1} = 'cfg = struct;';
+%
+% str{end+1} = ['cfg.savePath = ''' cfg.savePath ''';' ];
+% str{end} = [str{end} ' % folder to save cleaned datasets in '];
+%
+% str{end+1} = 
+
+flds = fields(cfg);
+for k = 1:length(flds)
+    lab = flds{k};
+    val = cfg.(flds{k});
+
+    if ismember(lab,{'fft','sw','ica'})
+        continue
+    end
+    
+    if     ischar(val)
+        str{1+k} = ['cfg.' lab ' = ''' val ''';'  ];
+
+    elseif isnumeric(val)
+        if length(val) > 1 || isempty(val)
+            str{1+k} = ['cfg.' lab ' = [' num2str(val) '];'  ];
+        else
+            str{1+k} = ['cfg.' lab ' = ' num2str(val) ';'  ];
+        end
+
+    elseif iscell(val)
+        temp = [];
+        for j = 1:length(val)
+            temp = [temp, '''' val{j} ''',' ];
+        end
+        str{1+k} = ['cfg.' lab ' = {' temp(1:end-1) '};'  ];
+
+    end
+end
+
+%% GENERATE SCRIPT TEXT - ADVANCED PARAMETERS
+% fft
+str{end+1} = [ 'cfg.fft.run = ' num2str(cfg.fft.run) ';'   ];
+%
+temp = '[';
+for k = 1:size(cfg.fft.binFreqs,1)
+    temp = [temp, num2str(cfg.fft.binFreqs(k,1)) ',' num2str(cfg.fft.binFreqs(k,2)) '; '];
+end
+temp = [temp(1:end-2) ']'];
+str{end+1} = [ 'cfg.fft.binFreqs = ' temp ';'   ];
+%
+if ~isempty(cfg.fft.binFreqsLabels)
+    temp = [];
+    for k = 1:length(cfg.fft.binFreqsLabels)
+        temp = [temp, '''' cfg.fft.binFreqsLabels{k} ''',' ];
+    end
+    str{end+1} = ['cfg.fft.binFreqsLabels = {' temp(1:end-1) '};'  ];
+else
+    str{end+1} = ['cfg.fft.binFreqsLabels = [];'  ];
+end
+
+% sw
+str{end+1} = [ 'cfg.sw.run = ' num2str(cfg.sw.run) ';'   ];
+%
+if ~isempty(cfg.sw.codes)
+    temp = [];
+    for k = 1:length(cfg.sw.codes)
+        temp = [temp, '''' cfg.sw.codes{k} ''',' ];
+    end
+    str{end+1} = ['cfg.sw.codes = {' temp(1:end-1) '};'  ];
+else
+    str{end+1} = ['cfg.sw.codes = [];'  ];
+end
+%
+str{end+1} = [ 'cfg.sw.run = ' num2str(cfg.sw.run) ';'   ];
+if length(cfg.sw.peakwin) > 1 || isempty(cfg.sw.peakwin)
+    str{end+1} = ['cfg.sw.peakwin = [' num2str(cfg.sw.peakwin) '];'  ];
+else
+    str{end+1} = ['cfg.sw.peakwin = ' num2str(cfg.sw.peakwin) ';'  ];
+end
+str{end+1} = [ 'cfg.sw.chan = ' num2str(cfg.sw.chan) ';'   ];
+str{end+1} = [ 'cfg.sw.autoFind = ' num2str(cfg.sw.autoFind) ';'   ];
+str{end+1} = [ 'cfg.sw.ampThresh = ' num2str(cfg.sw.ampThresh) ';'   ];
+
+% ica
+str{end+1} = [ 'cfg.ica.run = ' num2str(cfg.ica.run) ';'   ];
+str{end+1} = [ 'cfg.ica.numIC = ' num2str(cfg.ica.numIC) ';'   ];
+
+%% add command to call dusk2dawn cleaning
+str{end+1} = ''; % add a space for cleaner formatting
+str{end+1} = 'EEG = dusk2dawn_clean(EEG,cfg);';
+
+%% create new script file in cd, print code & open
+
+filename = 'D2D_script.m';
+fid = fopen(filename,'w'); 
+fprintf('\n\n')
+for k = 1:length(str)
+    fprintf(fid, [str{k} '\n']); % print to new script file
+    fprintf([str{k} '\n']);     % also print to command window
+end
+fprintf('\n\n')
+fclose(fid);
+open(filename)
+
+%% CLOSE GUI FOR SIMPLICITY
+evalin('caller', 'close(gcf); return;');
+
+%% END FUNCTION
+end
+
+%% OLD BITS
+
+% uilist = { 'Style', 'edit', 'string', str ,  'tag' 'stageWin'  };
+% geomhoriz = {1};
+% geom = {20};
+% % create GUI
+% supergui('geomhoriz',geomhoriz,'uilist', uilist, 'geom',geom)
+
+% % 
+% %% generate script text - Advanced Validation & ASR settings
+% 
+% % get advanced settings from GUI scope
+% cfg_valid   = evalin('caller','cfg_valid');
+% cfg_asr     = evalin('caller','cfg_asr');
+% cfg = updateCFG(cfg,cfg_valid);
+% cfg = updateCFG(cfg,cfg_asr);
+% 
+% %% find event codes from selections
+% 
+% 
+% %% generate script text
+% 
+% str{1} = 'cfg = struct;';
+% flds = fields(cfg);
+% for k = 1:length(flds)
+%     lab = flds{k};
+%     val = cfg.(flds{k});
+% 
+%     % branch depending on data type
+%     if     ischar(val)
+%         str{1+k} = ['cfg.' lab ' = ''' val ''';'  ];
+% 
+%     elseif isnumeric(val)
+%         str{1+k} = ['cfg.' lab ' = ' num2str(val) ';'  ];
+% 
+%     else
+%         error 'd2d_generateScript: GENERATION FAILED - CONTACT DEVELOPER: r.somervail@gmail.com'
+%     end
+% end
+% 
+% str{end+1} = '';
+% 
+% %% convert cfg values to a format that 
+% %   ! maybe pop a call to the conversion function at the end (? but does this account for valid & ASR?)
+% %       cfgout = convert_cfg_gui2(cfg,ents)
+
+
+

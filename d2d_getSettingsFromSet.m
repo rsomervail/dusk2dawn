@@ -9,7 +9,7 @@
 %%  
 function d2d_getSettingsFromSet
 
-    
+
     % choose file & get cfg from the chosen file
     [filename, filepath] = uigetfile('MultiSelect','off','*.set', 'Choose a file previously cleaned by D2D');
     info = pop_loadset('filename',filename,'filepath',filepath,'loadmode','info');

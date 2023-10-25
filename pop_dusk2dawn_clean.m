@@ -186,16 +186,20 @@ geo_line  = { 1 };
 vert_line = [ 1 ];
 ui_line   = { { 'Style', 'text', 'string', repmat('_',1,linelen), 'fontweight','bold' ,'fontsize',13} };
 
-%% DEFINE GUI ELEMENTS - GENERAL OPTIONS
-
-
+%% DEFINE GUI CALLBACK - GET SETTINGS FROM PREVIOUSLY SAVED FILE
 cmd = [ ' '' d2d_getSettingsFromSet; '' ' ]; %#ok<NBRAK2> 
-callback_getset = [' evalin(''caller'', ' cmd ' )   ']; % callback for button which gets settings from previously-cleaned file
+callback_getset = [' evalin(''caller'', ' cmd ' )   ']; 
+
+%% DEFINE GUI CALLBACK - GENERATE SCRIPT BUTTON
+cmd = [ ' ''d2d_generateScript;'' ' ]; %#ok<NBRAK2> 
+callback_genscript = [' evalin(''caller'', ' cmd ' )   ']; 
+
+%% DEFINE GUI ELEMENTS - GENERAL OPTIONS
 
 geo_general = { ...
     1   ... % WELCOME TEXT 1
     1   ... % WELCOME TEXT 2
-    [3 0.5  1.1] ... % savePath editbox
+    [3 0.5  1.1] ... % savePath editbox load_settings_button
 ...    [1 0.4  2.3]   ... % saveName editbox 
 };
 vert_general = [ ...
@@ -217,7 +221,7 @@ ui_general = { ...
 
 %% DEFINE GUI ELEMENTS - ASR OPTIONS - ASR PARAMETERS
 geo_asr_params = { ...
-    1 ... % ASR OPTIONS
+    [3 0.5  1.1] ... % ASR OPTIONS + genscript_button
     1 ... % 
     [1 3] ... % asr cutoff editbox + text 
     [1] ... % help text line 1
@@ -230,6 +234,8 @@ vert_asr_params = [ ...
 ];
 ui_asr_params = { ...
     { 'Style', 'text', 'string', ['ASR OPTIONS  ' repmat('_',1,linelen+17)], 'fontweight', 'bold', 'fontsize',13} ...
+        {} ...
+        { 'Style','pushbutton', 'string','Generate Script', 'callback',callback_genscript} ...
     {} ...
     { 'Style', 'edit', 'string', '[  35  ]' 'tag' 'asr_cutoff'  } ... 
         { 'Style', 'text', 'string', '<--- enter ASR cutoff(s)' 'fontweight', 'bold'} ...
@@ -280,7 +286,6 @@ ui_adv_asr = { ...
     { 'Style','pushbutton', 'string','Advanced ASR Options', 'callback',callback } ...
         { 'Style', 'text', 'string', '(generally you can leave these options unchanged)','fontangle','italic'} ...
 };
-
 
 
 %% DEFINE GUI ELEMENTS - VALIDATION OPTIONS
@@ -410,58 +415,8 @@ if any(  ...
 %     error 'looks like there are already D2D-cleaned files in this folder - delete them or choose another folder';
 end
 
-%% store & reformat parameters
-% ASR settings
-if isempty(ents) 
-    cfg.stageCodes = []; 
-else
-    cfg.stageCodes = ents(cfg.stageCodes);
-    cfg.stageCodes(strcmp(cfg.stageCodes,' ')) = []; % remove blank option
-    if isempty(cfg.stageCodes), cfg.stageCodes = []; end % make sure it is empty double if empty now
-end
-evalc([ 'cfg.stageWin = ' cfg.stageWin ]);
-if ~cfg.splitBySlidingWindow
-    cfg.chunk_len     = nan;
-    cfg.chunk_overlap = nan;
-else
-    evalc([ 'cfg.chunk_len = ' cfg.chunk_len ]);
-    evalc([ 'cfg.chunk_overlap = ' cfg.chunk_overlap ]);
-end
-evalc([ 'cfg.ref_maxbadchannels = ' cfg.ref_maxbadchannels ]);
-cfg.ref_maxbadchannels  = cfg.ref_maxbadchannels / 100; % convert MaxBadChannels to proportions for clean_windows function
-evalc([ 'cfg.ref_tolerances = ' cfg.ref_tolerances ]);
-evalc([ 'cfg.ref_wndlen = ' cfg.ref_wndlen ]);
-evalc([ 'cfg.asr_cutoff = ' cfg.asr_cutoff ]);   %#ok<*EVLEQ> 
-evalc([ 'cfg.asr_windowlength = ' cfg.asr_windowlength ]);   %#ok<*EVLEQ> 
-evalc([ 'cfg.asr_maxdims = ' cfg.asr_maxdims ]);   %#ok<*EVLEQ> 
-evalc([ 'cfg.asr_UseRiemannian = ' cfg.asr_UseRiemannian ]);   %#ok<*EVLEQ> 
-evalc([ 'cfg.asr_MaxMem = ' cfg.asr_MaxMem ]);   %#ok<*EVLEQ> 
-evalc([ 'cfg.maxreftime = ' cfg.maxreftime ]);   %#ok<*EVLEQ> 
-
-% validation settings - fft
-cfg.fft.run = cfg.fft_run; cfg = rmfield(cfg,'fft_run');
-evalc([ 'cfg.fft.binFreqs = ' cfg.fft_binFreqs ]); cfg = rmfield(cfg,'fft_binFreqs');
-evalc([ 'cfg.fft.binFreqsLabels = ' cfg.fft_binFreqsLabels ]); cfg = rmfield(cfg,'fft_binFreqsLabels');
-
-% validation settings - sw
-cfg.sw.run = cfg.sw_run; cfg = rmfield(cfg,'sw_run');
-if isempty(ents) 
-    cfg.sw.codes = []; 
-else
-    cfg.sw.codes = ents(cfg.sw_codes);
-    cfg.sw.codes(strcmp(cfg.sw.codes,' ')) = []; % remove blank option if selected
-    if isempty(cfg.sw.codes), cfg.sw.codes = []; end % make sure it is empty double if empty now
-end
-cfg = rmfield(cfg,'sw_codes');
-evalc([ 'cfg.sw.peakwin = ' cfg.sw_peakwin ]); cfg = rmfield(cfg,'sw_peakwin');
-cfg.sw.chan = cfg.sw_chan; cfg = rmfield(cfg,'sw_chan');
-cfg.sw.autoFind = cfg.sw_autoFind; cfg = rmfield(cfg,'sw_autoFind');
-evalc([ 'cfg.sw.ampThresh = ' cfg.sw_ampThresh ]); cfg = rmfield(cfg,'sw_ampThresh');
-cfg.sw.peakwin = cfg.sw.peakwin / 1000; % convert from ms to s
-
-% validation settings - ica
-cfg.ica.run = cfg.ica_run; cfg = rmfield(cfg,'ica_run');
-evalc([ 'cfg.ica.numIC = ' cfg.ica_numIC ]); cfg = rmfield(cfg,'ica_numIC');
+%% store & reformat parameters for dusk2dawn_clean function
+cfg = convert_cfg_gui2(cfg,ents);
 
 %% % check options were appropriate for these data
 % if cfg.ica.run && sum(isempty(),'all') % ? not sure which chanlocs are necessary for IClabel
@@ -492,17 +447,6 @@ end
 
 %% call dusk2dawn cleaning function 
 EEG = dusk2dawn_clean(EEG, cfg); % <-------------------------------------------------------
-
-%% SUBFUNCTION - update cfg with advanced options
-
-% update config cfg
-function cfg = updateCFG(cfg,add)
-    flds = fields(add);
-    for f = 1:length(flds)
-        cfg.(flds{f}) = add.(flds{f});
-    end
-end
-
 
 %% END MAIN FUNCTION
 end

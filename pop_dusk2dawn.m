@@ -30,6 +30,12 @@
 % for EEGLAB: https://github.com/sccn/clean_rawdata/blob/master/README.md
 %
 % 
+% ## PLEASE CITE THE FOLLOWING PAPER ##
+% Somervail R, Cataldi J, Stephan AM, Siclari F, Iannetti GD. 2023. 
+% Dusk2Dawn: an EEGLAB plugin for automatic cleaning of whole-night sleep electroencephalogram using Artifact Subspace Reconstruction. 
+% Sleep. 1–14.
+% 
+% 
 % ## HOW TO USE ##
 % This function calls both D2D core functions and will first clean the data, and then display
 % a window which lets you plot the data before and after ASR cleaning, as well as plot several 

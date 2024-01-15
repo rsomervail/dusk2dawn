@@ -9,7 +9,7 @@
 %%  
 function vers = eegplugin_dusk2dawn(fig,try_strings,catch_strings)
 
-vers = '3.4.0';
+vers = '3.4.1';
 p = fileparts(which('eegplugin_dusk2dawn'));
 
 % add boundedline subdirectory to matlab path

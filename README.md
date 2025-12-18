@@ -7,7 +7,10 @@ Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB.
 
 	Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022  
 		r.somervail@gmail.com    
-		www.iannettilab.net     
+		www.iannettilab.net
+
+  ** NOTE THAT THE GRAPHICAL USER INTERFACE (GUI) IN EEGLAB AND DUSK2DAWN ONLY SEEMS TO WORK ON MATLAB VERSION UP TO 2024b  (2025a+ changed how the GUI works) **
+		-> PLEASE USE WITH MATLAB 2022-2024
 
 If you use this plugin, please cite as:
 Somervail R, Cataldi J, Stephan AM, Siclari F, Iannetti GD. 2023. 

@@ -94,7 +94,7 @@ if npars > 0
            'helpcom','pophelp(''pop_dusk2dawn'');', 'title', 'Apply ASR cleaning to dataset -- pop_dusk2dawn()');
 
     % return if cancelled
-    if ~strcmp(strhalt,'retuninginputui') 
+    if isempty(cfg)
         return
     end
 

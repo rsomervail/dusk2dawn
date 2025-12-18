@@ -98,7 +98,7 @@ end
            'title','Advanced Options - Post-Cleaning Validation',  'helpcom', 'pophelp(''pop_dusk2dawn'');'); 
     
         % if clicked OK then return new settings
-        if strcmp(strhalt_local,'retuninginputui') 
+        if ~isempty(cfg_local)
             out = cfg_local;
         else
             out = in; % else don't change existing settings (return the same)

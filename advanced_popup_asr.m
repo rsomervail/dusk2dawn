@@ -159,7 +159,7 @@ function   out = advanced_popup_asr(in, plot, misc)
            'title','Advanced Options - ASR Cleaning',  'helpcom', 'pophelp(''pop_dusk2dawn'');'); 
     
         % if clicked OK then return new settings
-        if strcmp(strhalt_local,'retuninginputui') 
+        if ~isempty(cfg_local)
             out = cfg_local;
         else
             out = in; % else don't change existing settings (return the same)

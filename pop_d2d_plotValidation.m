@@ -144,7 +144,7 @@ uilist = [         ...
    'helpcom','pophelp(''pop_d2d_plotValidation'');','title','Plot effects of ASR on various validation metrics -- pop_d2d_group_plotValidation()');
  
 % return if cancelled
-if ~strcmp(strhalt,'retuninginputui') 
+if isempty(cfg)
     return
 end
 

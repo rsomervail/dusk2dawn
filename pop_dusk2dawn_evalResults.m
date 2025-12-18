@@ -141,7 +141,7 @@ uilist = [         ...
 
  
 %% either apply ASR or exit without applying depending on whether click OK or CANCEL
-if strcmp(strhalt,'retuninginputui')
+if ~isempty(cfg)
     for f = 1:nfiles
         EEG(f) = d2d_loadData(EEG(f),cfg);
     end

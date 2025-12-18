@@ -128,7 +128,7 @@ if (npars > 0) || (nfiles > 1) % these are the two conditions in which we need t
 %        'pophelp(pop_d2d_vis_artifacts)', ['Superimpose the same dataset before/after ASR cleaning -- ' mfilename '()']);
      
     % return if cancelled
-    if ~strcmp(strhalt,'retuninginputui') 
+    if isempty(cfg)
         return
     end
 

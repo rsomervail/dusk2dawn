@@ -200,16 +200,26 @@ for st = 1:nstages
 end % STAGE LOOP
 
 %% save merged validation structure structure in each dataset
-ctemp = []; 
-ctemp.headerOnly = true;
-ctemp.savePath   = cfg.loadPath;
-for f = 1 : length(cfg.loadNames)
-    % load, add validation struct and resave
-    EEG = pop_loadset('filepath', cfg.loadPath, 'filename', cfg.loadNames{f}, 'loadmode', 'info');
+if ~isempty(cfg.loadPath)
+    ctemp = []; 
+    ctemp.headerOnly = true;
+    ctemp.savePath   = cfg.loadPath;
+    for f = 1 : length(cfg.loadNames)
+        % load, add validation struct and resave
+        EEG = pop_loadset('filepath', cfg.loadPath, 'filename', cfg.loadNames{f}, 'loadmode', 'info');
+        EEG.etc.dusk2dawn.valid_merged = valid_merged;
+        ctemp.saveName = cfg.loadNames{f};
+        d2d_saveDataset(EEG, ctemp);
+    end
+else % if running fully in RAM
+    EEG = evalin("caller",'EEG');
     EEG.etc.dusk2dawn.valid_merged = valid_merged;
-    ctemp.saveName = cfg.loadNames{f};
-    d2d_saveDataset(EEG, ctemp);
-end 
+    for f = 1 : length(cfg.loadNames)-1
+        EEG.etc.dusk2dawn.EEG_cleaned.EEG{f}.etc.dusk2dawn.valid_merged = valid_merged;
+    end
+    assignin("caller","EEG",EEG);
+end
+
 fprintf('... finished merging validation metrics across ASR thresholds\n')
 
 end % END FUNCTION

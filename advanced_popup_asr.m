@@ -159,7 +159,7 @@ function   out = advanced_popup_asr(in, plot, misc)
            'title','Advanced Options - ASR Cleaning',  'helpcom', 'pophelp(''pop_dusk2dawn'');'); 
     
         % if clicked OK then return new settings
-        if strcmp(strhalt_local,'retuninginputui') 
+        if ~isempty(cfg_local)
             out = cfg_local;
         else
             out = in; % else don't change existing settings (return the same)
@@ -168,10 +168,10 @@ function   out = advanced_popup_asr(in, plot, misc)
     %% don't plot just return defaults 
     else
         % ASR defaults
-        out.ref_tolerances = '[  -3.5,  5  ]';
+        out.ref_tolerances = '[  -3.5,  5.5  ]';
         out.ref_maxbadchannels = '[   7.5   ]';
         out.ref_wndlen = '[   2   ]';
-        out.asr_windowlength = ['[ '  num2str( max( 3,1.5*misc.nbchan/misc.srate) , 8 )  ' ]'];
+        out.asr_windowlength = ['[ '  num2str( max(3,1.5*misc.nbchan/misc.srate) , 8 )  ' ]'];
         out.asr_maxdims = '[  2/3  ]';
         out.asr_useGPU = 0;
         out.asr_UseRiemannian = '0';

@@ -53,7 +53,7 @@ cols_freqs = [0,0,1;1,0,0;0,1,0;0,0,0.172413793103448;1,0.103448275862069,0.7241
 cfgd = EEG(1).etc.dusk2dawn.cfg;
 
 %% get parameters to plot on each axis
-pars = cfgd.pars;
+pars  = cfgd.pars;
 npars = length(pars.labels);
 
 % if no varied parameters then create virtual parameter and set this to plot on X axis

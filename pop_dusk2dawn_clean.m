@@ -376,13 +376,13 @@ uilist = [ ...
 
 %% RUN GUI AND GET PARAMETERS
 
-[ ~,~,strhalt, cfg ] = inputgui( 'geometry',geometry,'uilist', uilist, 'geomvert',vert, ...
+[ ~, ~,~, cfg ] = inputgui( 'geometry',geometry,'uilist', uilist, 'geomvert',vert, ...
    'helpcom','pophelp(''pop_dusk2dawn'');', ...
    'title','Clean whole-night dataset using ASR -- pop_dusk2dawn_clean()' ...
    ,  'skipline', 'off' );
 
 % return if cancelled
-if ~strcmp(strhalt,'retuninginputui') % if cancelled
+if isempty(cfg) % if cancelled
     cancelFlag = true;
     return
 else 
@@ -394,25 +394,29 @@ end
 cfg = updateCFG(cfg,cfg_valid);
 cfg = updateCFG(cfg,cfg_asr);
 
-%% make save directory if doesn't exist yet
-if ~exist(cfg.savePath,'dir')
-    mkdir(cfg.savePath);
-end
 
-%% check for matching files in this directory, indicating there is a run of D2D already present
-files = dir(cfg.savePath);
-files = files(~[files.isdir]);
-files = {files.name};           
-files(~endsWith(files,'.set')) = []; % remove all but .set files
-files2clean = {EEG.filename};
-files2clean = strrep(files2clean,'.set',''); % remove extensions
-if any(  ...
-        contains(files,'_clean') ...
-        &  cellfun(  @(x) any(startsWith(x, files2clean )) , files )  ...
-      )   
-    errordlg2('! looks like there are already D2D-cleaned files in this folder - this may cause compatibility issues' ...
-        ,'Error - The chosen save folder may contain a previous D2D runthrough for these datasets');
-%     error 'looks like there are already D2D-cleaned files in this folder - delete them or choose another folder';
+%% IF THERE IS A SAVE PATH PROVIDED, THEN DO VARIOUS CHECKS
+if ~isempty(cfg.savePath)
+    % make save directory if doesn't exist yet
+    if ~exist(cfg.savePath,'dir')
+        mkdir(cfg.savePath);
+    end
+    
+    % check for matching files in this directory, indicating there is a run of D2D already present
+    files = dir(cfg.savePath);
+    files = files(~[files.isdir]);
+    files = {files.name};           
+    files(~endsWith(files,'.set')) = []; % remove all but .set files
+    files2clean = {EEG.filename};
+    files2clean = strrep(files2clean,'.set',''); % remove extensions
+    if any(  ...
+            contains(files,'_clean') ...
+            &  cellfun(  @(x) any(startsWith(x, files2clean )) , files )  ...
+          )   
+        errordlg2('! looks like there are already D2D-cleaned files in this folder - this may cause compatibility issues' ...
+            ,'Error - The chosen save folder may contain a previous D2D runthrough for these datasets');
+    %     error 'looks like there are already D2D-cleaned files in this folder - delete them or choose another folder';
+    end
 end
 
 %% store & reformat parameters for dusk2dawn_clean function

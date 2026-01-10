@@ -13,6 +13,13 @@
 %%  
 function EEG = dusk2dawn_clean(EEG, cfg)
 
+%% handle inputs
+if ~isempty(cfg.savePath)
+    cfg.saveFlag = true;
+else
+    cfg.saveFlag = false;
+end
+
 %% handle multiple files
 nfiles = length(EEG);
 EEG_all = EEG; % store all datasets as other variable, doing this even if only one dataset for simplicity
@@ -193,7 +200,6 @@ for f = 1:nfiles
             ref_masks = cellfun( @(x) cell(1,nstages) ,ref_masks,'UniformOutput' ,false);
         end
     end
-
     
     %% run validation on raw data for reference
     fprintf([ repmat('-', 1,200) '\n\n']);
@@ -228,11 +234,14 @@ for f = 1:nfiles
         valid_orig = EEG.etc.dusk2dawn.valid;
     
         % save raw dataset
-        ctemp = [];
-        ctemp.saveName = cfg.origFile;
-        ctemp.savePath = cfg.savePath;
-        EEG = d2d_saveDataset(EEG, ctemp); 
-        clear EEG % delete afterwards to save memory while dataset is split by stage
+        if cfg.saveFlag
+            ctemp = [];
+            ctemp.saveName = cfg.origFile;
+            ctemp.savePath = cfg.savePath;
+            ctemp.saveFlag = cfg.saveFlag;
+            EEG = d2d_saveDataset(EEG, ctemp); 
+            clear EEG % delete afterwards to save memory while dataset is split by stage
+        end
     
     else % not splitting by stages
     
@@ -254,10 +263,13 @@ for f = 1:nfiles
         [EEG, valid_orig] = d2d_validateCleaning(EEG, cfg); 
     
         % save raw dataset
-        ctemp = [];
-        ctemp.saveName = cfg.origFile;
-        ctemp.savePath = cfg.savePath;
-        EEG = d2d_saveDataset(EEG, ctemp); % keep if not splitting by stage
+        if cfg.saveFlag
+            ctemp = [];
+            ctemp.saveName = cfg.origFile;
+            ctemp.savePath = cfg.savePath;
+            ctemp.saveFlag = cfg.saveFlag;
+            EEG = d2d_saveDataset(EEG, ctemp); % keep if not splitting by stage
+        end
         
     end % end if split by stages
 
@@ -397,10 +409,21 @@ for f = 1:nfiles
                 end % end if split by stages
     
                 % save cleaned dataset
-                ctemp = [];
-                ctemp.savePath = cfg.savePath;
-                ctemp.saveName = cfg.cleanFiles{count}; 
-                d2d_saveDataset(EEG_cleaned, ctemp);
+                if cfg.saveFlag
+                    ctemp = [];
+                    ctemp.savePath = cfg.savePath;
+                    ctemp.saveName = cfg.cleanFiles{count}; 
+                    ctemp.saveFlag = cfg.saveFlag;
+                    EEG_cleaned = d2d_saveDataset(EEG_cleaned, ctemp);
+                else % if running totally in RAM
+                    if count == 1
+                        EEG.etc.dusk2dawn.EEG_cleaned = table;
+                    end
+                    EEG_cleaned.setname  = strrep(cfg.cleanFiles{count}, '.set','');
+                    EEG_cleaned.filename = cfg.cleanFiles{count};
+                    EEG.etc.dusk2dawn.EEG_cleaned.cleanFiles{count} = cfg.cleanFiles{count};
+                    EEG.etc.dusk2dawn.EEG_cleaned.EEG{count} = EEG_cleaned;
+                end
 
                 % print 
                 if npars > 0
@@ -460,11 +483,6 @@ end % loop through datasets
 
 % output set of datasets appropriately processed
 EEG = EEG_all; % rename to EEG so it can be passed back out to master function
-
-% % merge results of validation across the group ? not necessary because this is handled by d2d_plotValidation anyway
-% if nfiles > 1
-%     EEG = d2d_group_validateMerge(EEG);
-% end
 
 fprintf('\n\n')
 fprintf('%s: finished cleaning all selected datasets\n',mfilename)

@@ -129,12 +129,12 @@ function signal = d2d_clean_asr(signal,cutoff,windowlen,stepsize,maxdims,ref_max
 % -> This is a local copy to ensure D2D will always work with a compatible version of the ASR functions
 
 if ~exist('cutoff','var') || isempty(cutoff) cutoff = 5; end
-if ~exist('windowlen','var') || isempty(windowlen) windowlen = max(0.5,1.5*signal.nbchan/signal.srate); end
+if ~exist('windowlen','var') || isempty(windowlen) windowlen = max(3,1.5*signal.nbchan/signal.srate); end
 if ~exist('stepsize','var') || isempty(stepsize) stepsize = []; end
 if ~exist('maxdims','var') || isempty(maxdims) maxdims = 0.66; end
 if ~exist('ref_maxbadchannels','var') || isempty(ref_maxbadchannels) ref_maxbadchannels = 0.075; end
 if ~exist('ref_tolerances','var') || isempty(ref_tolerances) ref_tolerances = [-3.5 5.5]; end
-if ~exist('ref_wndlen','var') || isempty(ref_wndlen) ref_wndlen = 1; end
+if ~exist('ref_wndlen','var') || isempty(ref_wndlen) ref_wndlen = 2; end
 if ~exist('usegpu','var') || isempty(usegpu) usegpu = false; end
 if ~exist('maxmem','var') || isempty(maxmem) maxmem = 64; end
 if ~exist('useriemannian','var') || isempty(useriemannian) useriemannian = false; end

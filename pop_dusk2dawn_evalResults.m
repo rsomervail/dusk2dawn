@@ -141,9 +141,17 @@ uilist = [         ...
 
  
 %% either apply ASR or exit without applying depending on whether click OK or CANCEL
-if strcmp(strhalt,'retuninginputui')
-    for f = 1:nfiles
-        EEG(f) = d2d_loadData(EEG(f),cfg);
+if ~isempty(cfg) 
+    ctemp = evalin("caller",'cfg'); %!!! HERE NEED TO GET THE CURRENT SAVE CONDITION, DOES THIS LINE WORK WHEN CALLED IN PIPELINE NORMALLY?
+    if ~isempty(cfg.savePath) % if saving to disk
+        for f = 1:nfiles
+            EEG(f) = d2d_loadData(EEG(f),cfg);
+        end
+    else % if running fully in RAM
+        for f = 1:nfiles
+            ind = 0; %!!! 
+            EEG(f) = EEG(f).etc.dusk2dawn.EEG_cleaned.EEG{ind};
+        end
     end
 end
 

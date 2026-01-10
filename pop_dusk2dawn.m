@@ -113,22 +113,20 @@
 
 function pop_dusk2dawn % no inputs or outputs because everything evaluated in base
 
-overwrite = '[ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, CURRENTSET); eeglab redraw;';
+overwrite = '[ALLEEG EEG CURRENTSET] = eeg_store(ALLEEG, EEG, 1:length(EEG)); eeglab redraw;';
 
 % clean data & validate cleaning
-cmd_clean = [ ... 
-'[EEG, cancelFlag] = pop_dusk2dawn_clean(EEG);' ...
-overwrite ... 
-];
+cmd_clean = '[EEG, cancelFlag] = pop_dusk2dawn_clean(EEG);';
 evalin("base", cmd_clean);
+evalin("base", overwrite);
 
 % evaluate results (plot data before/after ASR, plot validation metrics) & apply final cleaning
 cmd_evalResults = [ ...
 'if ~cancelFlag, ' ...
 'EEG = pop_dusk2dawn_evalResults(EEG);' ...
-overwrite ...
 'end'
 ];
 evalin("base", cmd_evalResults);
+evalin("base", ['if ~cancelFlag,' overwrite 'end'] );
 
 end

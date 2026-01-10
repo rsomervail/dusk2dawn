@@ -1,5 +1,5 @@
 # dusk2dawn
-Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB.
+Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB (2022).
 
 - Dusk2Dawn allows users to easily clean whole-night sleep EEG data using sleep-specific implementations of Artifact Subspace Reconstruction (ASR).   
 - The accessible GUI interface also allows users to easily test a range of ASR parameters and visualise the effects on their data (e.g. the effects on Slow-Wave amplitude), before deciding which set of parameters to use.   
@@ -7,7 +7,9 @@ Dusk2Dawn plugin for the EEGLAB toolbox in MATLAB.
 
 	Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022  
 		r.somervail@gmail.com    
-		www.iannettilab.net     
+		www.iannettilab.net
+
+  ** WORKS ON MATLAB 2022a/b, later versions changed the way graphical interfaces work which broke the plugin (new version in development) ** 
 
 If you use this plugin, please cite as:
 Somervail R, Cataldi J, Stephan AM, Siclari F, Iannetti GD. 2023. 
@@ -15,6 +17,9 @@ Dusk2Dawn: an EEGLAB plugin for automatic cleaning of whole-night sleep electroe
 Sleep. 1–14.
 		  
 	History:  
+    09/01/2026 ver 4.1.0 Added the ability to avoid saving to disk and run entirely in RAM   
+    04/01/2026 ver 4.0.1 Minor edits   
+    18/12/2025 ver 4.0.0 Fixed various bugs that broke the GUI on newer versions of EEGLAB & MATLAB (quick update, more bugfixes for new MATLAB versions on the way)  
     15/01/2024 ver 3.4.1 Added published paper to cite when using D2D  
     25/10/2023 ver 3.4.0 Added button to GUI to automatically generate a script from current settings. Also misc bugfixes.  
 	27/09/2023 ver 3.3.1 GUI bugfixes & misc improvements.  

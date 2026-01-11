@@ -17,7 +17,7 @@ end
 %% get validation structure & list of varied parameters
 if isfield(cfg,'valid') && isfield(cfg,'pars') % if varied pars & validation structures to merge have been provided
     valid = cfg.valid;
-    pars = cfg.pars;
+    pars  = cfg.pars;
 else % otherwise load both from file
         
     % load validated dataset (info/header only) 
@@ -214,8 +214,8 @@ if ~isempty(cfg.loadPath)
 else % if running fully in RAM
     EEG = evalin("caller",'EEG');
     EEG.etc.dusk2dawn.valid_merged = valid_merged;
-    for f = 1 : length(cfg.loadNames)-1
-        EEG.etc.dusk2dawn.EEG_cleaned.EEG{f}.etc.dusk2dawn.valid_merged = valid_merged;
+    for f = 2 : length(cfg.loadNames) % skip the raw data which is not currently in the EEG_list
+        EEG.etc.dusk2dawn.EEG_list{f}.etc.dusk2dawn.valid_merged = valid_merged; %? this looks weird but is correct
     end
     assignin("caller","EEG",EEG);
 end

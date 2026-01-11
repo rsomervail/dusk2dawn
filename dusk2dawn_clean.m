@@ -175,6 +175,7 @@ for f = 1:nfiles
     EEG = d2d_checkData(EEG);
     
     %% store all dusk2dawn settings and info in EEG structure
+    EEG.etc.dusk2dawn = struct; % if a previous run of D2D was in the data, wipe it
     cfg.origFile   = [ strrep( EEG.setname,'.set','') '.set']; % easier than conditionals
     cfg.cleanFiles = cellfun( @(x) [ strrep(cfg.origFile,'.set','') x '.set' ]  , cleanfile_suffixes , 'UniformOutput'  , false);
     EEG.etc.dusk2dawn.cfg = cfg;
@@ -416,13 +417,9 @@ for f = 1:nfiles
                     ctemp.saveFlag = cfg.saveFlag;
                     EEG_cleaned = d2d_saveDataset(EEG_cleaned, ctemp);
                 else % if running totally in RAM
-                    if count == 1
-                        EEG.etc.dusk2dawn.EEG_cleaned = table;
-                    end
                     EEG_cleaned.setname  = strrep(cfg.cleanFiles{count}, '.set','');
                     EEG_cleaned.filename = cfg.cleanFiles{count};
-                    EEG.etc.dusk2dawn.EEG_cleaned.cleanFiles{count} = cfg.cleanFiles{count};
-                    EEG.etc.dusk2dawn.EEG_cleaned.EEG{count} = EEG_cleaned;
+                    EEG.etc.dusk2dawn.EEG_list{count+1} = EEG_cleaned;
                 end
 
                 % print 

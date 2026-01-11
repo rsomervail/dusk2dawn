@@ -38,22 +38,7 @@ else % if loading cleaned data
     
     % find clean file
     fprintf('d2d_loadData: loading a previously-cleaned dataset from disk ...\n')
-    if isfield(cfg,'sel_par_1')
-        load1 = [ '_p1-' num2str(cfg.sel_par_1,'%02d') ];
-    else
-        load1 = '';
-    end
-    if isfield(cfg,'sel_par_2')
-        load2 = [ '_p2-' num2str(cfg.sel_par_2,'%02d') ];
-    else
-        load2 = '';
-    end
-    if isfield(cfg,'sel_par_3')
-        load3 = [ '_p3-' num2str(cfg.sel_par_3,'%02d') ];
-    else 
-        load3 = '';
-    end
-    file2load = [ origFile '_clean' load1 load2 load3  ];
+    file2load = d2d_getCleanedFileName(origFile,cfg);
 
 end % if loadRaw
 

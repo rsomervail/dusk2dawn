@@ -5,18 +5,16 @@
 % Author: Richard Somervail, Istituto Italiano di Tecnologia, 2022
 %           www.iannettilab.net 
 %%  
-function EEG = d2d_vis_artifacts( EEG, cfg )
+function d2d_vis_artifacts( EEG, cfg )
 
 %% check whether 2 datasets were selected, if no then just assume 0 varied parameters and plot data before/after ASR
 if isempty(cfg)
 
     % EEG plotted in red
-    ctemp = [];
     ctemp.loadRaw = true;
     EEG_red = d2d_loadData(EEG,ctemp);
 
     % EEG plotted in blue
-    ctemp = [];
     ctemp.loadRaw = false;
     EEG_blue = d2d_loadData(EEG,ctemp);
 

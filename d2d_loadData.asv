@@ -24,27 +24,20 @@ else
 end
 
 % defaults 
-if ~isfield(cfg,'loadRaw'),  cfg.loadRaw  = false; end
-if ~isfield(cfg,'keepList'), cfg.keepList = false; end % keep EEG_list when loading data? default is no
+if ~isfield(cfg,'loadRaw'), cfg.loadRaw = false; end
 
 % get dataset filenames and paths
 savePath   = EEG.etc.dusk2dawn.cfg.savePath;
 origFile   = strrep(EEG.etc.dusk2dawn.cfg.origFile,'.set','');
 cleanFiles = EEG.etc.dusk2dawn.cfg.cleanFiles;
 
-if ~isempty(savePath)
-    sourcestr = 'disk';
-else
-    sourcestr = 'memory';
-end
-
 % load either raw data or a cleaned file
 if cfg.loadRaw
-    fprintf('d2d_loadData: loading raw data from %s ...\n',sourcestr)
+    fprintf('d2d_loadData: loading raw data from disk ...\n')
     file2load = origFile;
 else % if loading cleaned data
     % find clean file
-    fprintf('d2d_loadData: loading a previously-cleaned dataset from %s ...\n',sourcestr)
+    fprintf('d2d_loadData: loading a previously-cleaned dataset from disk ...\n')
     file2load = d2d_getCleanedFileName(origFile,cfg);
 end % if loadRaw
 fprintf('d2d_loadData: dataset = %s.set ...\n', file2load )
@@ -65,16 +58,9 @@ else % otherwise swap the datasets from memory (EEG_list)
         EEG_old = EEG; % store the old data structure and remove the list of structures from it
         EEG     = EEG_list{sel_ind}; % swap the selected structure into the overall structure
         EEG_list{sel_ind} = []; % remove the selected data structure from the list of structures
-        if cfg.keepList % if keeping all files in a list (not used when loading temporarily within a local scope e.g. d2d_vis_artifacts)
-            EEG_list{old_ind}          = EEG_old; % store the old data structure in the list of structures
-            EEG.etc.dusk2dawn.EEG_list = EEG_list; % reinsert the list of structures to the etc of the newly selected file
-        end
-        clear EEG_old EEG_list
-    else
-        if ~cfg.keepList
-            % remove the list of data structures if not changing the data but not asking to keep it 
-            EEG.etc.dusk2dawn = rmfield(EEG.etc.dusk2dawn,'EEG_list');
-        end
+        EEG_list{old_ind} = EEG_old; % store the old data structure in the list of structures
+        clear EEG_old
+        EEG(f).etc.dusk2dawn.EEG_list = EEG_list; % reinsert the list of structures to the etc of the newly selected file
     end
 end
 

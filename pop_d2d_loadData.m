@@ -100,6 +100,9 @@ if npars > 0
 
     % call actual function 
     for f = 1:nfiles
+        if isempty(EEG(f).etc.dusk2dawn.cfg.savePath)
+            cfg.keepList = true; % if running in memory, then will need to keep the list of EEG data structures
+        end
         EEG(f) = d2d_loadData(EEG(f), cfg);
     end
 end

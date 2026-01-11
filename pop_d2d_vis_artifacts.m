@@ -20,7 +20,7 @@ if any( arrayfun( @(x) ~isfield(x.etc,'dusk2dawn'), EEG ) )
     return
 end
 
-cfg = EEG(1).etc.dusk2dawn.cfg;
+cfg  = EEG(1).etc.dusk2dawn.cfg;
 pars = cfg.pars; npars = length(pars.labels);
 
 %% predefinitions
@@ -147,7 +147,9 @@ end
 if nfiles > 1
     EEG = EEG(cfg.whichData);
 end
-EEG.data = []; % no need to send the data to lower level functions (it's loaded there anyway)
+if ~isempty(EEG.etc.dusk2dawn.cfg.savePath)
+    EEG.data = []; % no need to send the data to lower level functions (it's loaded there anyway)
+end
 d2d_vis_artifacts(EEG, cfg);
 
 end

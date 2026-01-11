@@ -134,68 +134,19 @@ uilist = [         ...
 ];
 
 %% create GUI
-
 [ ~,~, strhalt, cfg ] = inputgui( 'geometry', geometry, 'uilist',uilist, ...
     'title', 'Evaluate results & apply cleaning -- pop_dusk2dawn_evalResults()', ...
    'helpcom','pophelp(''pop_dusk2dawn_evalResults'');' );
 
 %% either apply ASR or exit without applying depending on whether click OK or CANCEL
-if ~isempty(cfg) 
-    if EEG(1).etc.dusk2dawn.cfg.saveFlag % if saving to disk
-        for f = 1:nfiles
-            EEG(f) = d2d_loadData(EEG(f),cfg);
-        end
-    else % if running fully in RAM
-        for f = 1:nfiles
-            % get index of cleaned file to select
-            ctemp = EEG(f).etc.dusk2dawn.cfg;
-            file2load = d2d_getCleanedFileName(ctemp.origFile,cfg);
-            filelist  = [ ctemp.origFile  ctemp.cleanFiles];
-            old_ind   = find(strcmp(filelist,[EEG(f).setname '.set']));
-            sel_ind   = find(strcmp(filelist,[file2load '.set']));
-
-            % select that data and swap it out with the current one
-            if ~(sel_ind == old_ind)
-                EEG_list  = EEG(f).etc.dusk2dawn.EEG_list;
-                EEG(f).etc.dusk2dawn = rmfield(EEG(f).etc.dusk2dawn,'EEG_list');
-                EEG_old = EEG(f); % store the old data structure and remove the list of structures from it
-                EEG(f)  = EEG_list{sel_ind}; % swap the selected structure into the overall structure
-                EEG_list{sel_ind} = []; % remove the selected data structure from the list of structures
-                EEG_list{old_ind} = EEG_old; % store the old data structure in the list of structures
-                clear EEG_old
-                EEG(f).etc.dusk2dawn.EEG_list = EEG_list; % reinsert the list of structures to the etc of the newly selected file
-            end
-        end
-    end
-else
-    % if cancel is pressed, then load raw data (if save path is provided)
-    if EEG(1).etc.dusk2dawn.cfg.saveFlag % if saving to disk
+for f = 1:nfiles
+    if ~isempty(cfg) % if ok is pressed then load the selected data
+        ctemp = cfg;
+    else             % if cancel is pressed, then load raw data
         ctemp = struct('loadRaw',true);
-        for f = 1:nfiles
-            EEG(f) = d2d_loadData(EEG(f),ctemp);
-        end
-    else % if running fully in RAM 
-         for f = 1:nfiles
-            % get index of the selected raw data
-            ctemp = EEG(f).etc.dusk2dawn.cfg;
-            file2load = d2d_getCleanedFileName(ctemp.origFile,cfg);
-            filelist  = [ ctemp.origFile  ctemp.cleanFiles];
-            old_ind   = find(strcmp(filelist,[EEG(f).setname '.set']));
-            sel_ind   = 1; % raw data
-
-            % select the raw data and swap it for the current data structure
-            if ~(sel_ind == old_ind)
-                EEG_list  = EEG(f).etc.dusk2dawn.EEG_list;
-                EEG(f).etc.dusk2dawn = rmfield(EEG(f).etc.dusk2dawn,'EEG_list');
-                EEG_old = EEG(f); % store the old data structure and remove the list of structures from it
-                EEG(f)  = EEG_list{sel_ind}; % swap the selected structure into the overall structure
-                EEG_list{sel_ind} = []; % remove the selected data structure from the list of structures
-                EEG_list{old_ind} = EEG_old; % store the old data structure in the list of structures
-                clear EEG_old
-                EEG(f).etc.dusk2dawn.EEG_list = EEG_list; % reinsert the list of structures to the etc of the newly selected file
-            end
-        end
     end
-end
-
+    if isempty(EEG(f).etc.dusk2dawn.cfg.savePath)
+        ctemp.keepList = true; % if running in memory, then will need to keep the list of EEG data structures
+    end
+    EEG(f) = d2d_loadData(EEG(f),ctemp);
 end

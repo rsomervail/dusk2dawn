@@ -157,8 +157,8 @@ for st = 1:nstages
     end
     % fft
     if isfield(v,'fft') && cfg.plot_fft
-        fig_fft_powerByBand_abs(st)  = figure('name',[ figprefix  'FFT power by band (absolute)'], 'numbertitle','off');
-        fig_fft_powerByBand_prop(st) = figure('name',[ figprefix  'FFT power by band (%)'], 'numbertitle','off');
+        fig_fft_powerByBand_abs(st)  = figure('name',[ figprefix  'FFT amplitude by band (absolute)'], 'numbertitle','off');
+        fig_fft_powerByBand_prop(st) = figure('name',[ figprefix  'FFT amplitude by band (%)'], 'numbertitle','off');
     end
     % sw
     if isfield(v,'sw')  && cfg.plot_sw
@@ -344,7 +344,7 @@ for st = 1:nstages
                 [lineh(k), areah(k)] = boundedline( dimx_range, mean(temp2plot(:,:,k)), std(temp2plot(:,:,k)) ,'-o', 'cmap', cols_freqs(k,:)  ); hold on
             end
         end
-        ylabel 'power'
+        ylabel 'amplitude (normalisd by frequency)'
         setYlim('abs',1)
         if c == 1 && r == 1, legend(lineh,o.binFreqsLabels, 'Location','northeast'); end
             editPlot; % set various plotting parameters
@@ -368,7 +368,7 @@ for st = 1:nstages
                 [lineh(k), areah(k)] = boundedline( dimx_range, mean(temp2plot(:,:,k)), std(temp2plot(:,:,k)) ,'-o', 'cmap', cols_freqs(k,:)  ); hold on
             end
         end
-        ylabel 'power (%)'
+        ylabel 'amplitude (%)'
         setYlim('abs',1) % abs here because makes a neater plot for power reduction
         if c == 1 && r == 1, legend(lineh,o.binFreqsLabels, 'Location','northeast'); end
             editPlot; % set various plotting parameters

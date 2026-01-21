@@ -134,13 +134,20 @@ uilist = [         ...
 ];
 
 %% create GUI
-[ ~,~, strhalt, cfg ] = inputgui( 'geometry', geometry, 'uilist',uilist, ...
+[ outparam, userdat, strhalt, cfg ] = inputgui( 'geometry', geometry, 'uilist',uilist, ...
     'title', 'Evaluate results & apply cleaning -- pop_dusk2dawn_evalResults()', ...
    'helpcom','pophelp(''pop_dusk2dawn_evalResults'');' );
 
+% get ok or cancel
+if strcmp(strhalt,'retuninginputui') 
+    cancelFlag = false;
+else
+    cancelFlag = true;
+end
+
 %% either apply ASR or exit without applying depending on whether click OK or CANCEL
 for f = 1:nfiles
-    if ~isempty(cfg) % if ok is pressed then load the selected data
+    if ~cancelFlag % if ok is pressed then load the selected data
         ctemp = cfg;
     else             % if cancel is pressed, then load raw data
         ctemp = struct('loadRaw',true);

@@ -27,6 +27,10 @@ pars = cfg.pars; npars = length(pars.labels);
 space = { {} };
 
 %% define GUI elements - choose which dataset to plot
+filenames = cell(1,nfiles);
+for f = 1:nfiles
+    filenames{f} = strrep(EEG(f).etc.dusk2dawn.cfg.origFile,'.set','');
+end
 if nfiles > 1
     geo_whichData = [ ...
         1 ...
@@ -34,7 +38,7 @@ if nfiles > 1
     ];
     ui_whichData = { ...
         { 'Style', 'text', 'string', 'Choose which dataset to plot:', 'fontweight', 'bold' } ...
-        { 'Style', 'popupmenu', 'string', {EEG.setname}, 'value', 1,  'tag' 'whichData'  } ...
+        { 'Style', 'popupmenu', 'string', filenames, 'value', 1,  'tag' 'whichData'  } ...
     };
 else
     geo_whichData = [];
@@ -127,8 +131,15 @@ if (npars > 0) || (nfiles > 1) % these are the two conditions in which we need t
        [], ['Superimpose the same dataset before/after ASR cleaning -- ' mfilename '()']);
 %        'pophelp(pop_d2d_vis_artifacts)', ['Superimpose the same dataset before/after ASR cleaning -- ' mfilename '()']);
      
+    % get ok or cancel
+    if strcmp(strhalt,'retuninginputui') 
+        cancelFlag = false;
+    else
+        cancelFlag = true;
+    end
+
     % return if cancelled
-    if isempty(cfg)
+    if cancelFlag
         return
     end
 
@@ -146,6 +157,7 @@ end
 %% call d2d_vis_artifacts
 if nfiles > 1
     EEG = EEG(cfg.whichData);
+    cfg = rmfield(cfg,'whichData');
 end
 if ~isempty(EEG.etc.dusk2dawn.cfg.savePath)
     EEG.data = []; % no need to send the data to lower level functions (it's loaded there anyway)

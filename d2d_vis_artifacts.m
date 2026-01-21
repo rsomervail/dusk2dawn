@@ -8,7 +8,7 @@
 function d2d_vis_artifacts( EEG, cfg )
 
 %% check whether 2 datasets were selected, if no then just assume 0 varied parameters and plot data before/after ASR
-if isempty(cfg)
+if isempty(fields(cfg))
 
     % EEG plotted in red
     ctemp.loadRaw = true;

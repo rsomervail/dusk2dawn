@@ -376,19 +376,22 @@ uilist = [ ...
 
 %% RUN GUI AND GET PARAMETERS
 
-[ ~, ~,~, cfg ] = inputgui( 'geometry',geometry,'uilist', uilist, 'geomvert',vert, ...
+[ ~, ~, strhalt, cfg ] = inputgui( 'geometry',geometry,'uilist', uilist, 'geomvert',vert, ...
    'helpcom','pophelp(''pop_dusk2dawn'');', ...
    'title','Clean whole-night dataset using ASR -- pop_dusk2dawn_clean()' ...
    ,  'skipline', 'off' );
 
-% return if cancelled
-if isempty(cfg) % if cancelled
-    cancelFlag = true;
-    return
-else 
+% get ok or cancel
+if strcmp(strhalt,'retuninginputui') 
     cancelFlag = false;
+else
+    cancelFlag = true;
 end
 
+% return if cancelled
+if cancelFlag
+    return
+end
 %% UPDATE ADVANCED SETTINGS
 % need to copy advanced settings to cfg here using the subfunction
 cfg = updateCFG(cfg,cfg_valid);

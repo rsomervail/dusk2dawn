@@ -32,9 +32,13 @@ npars = length(pars.labels);
 %% if no varied parameters then toggle between clean data and raw data
 if npars == 0
     cfg = [];
-    cfg.loadRaw = ~EEG(1).etc.dusk2dawn.valid(1).raw;
+    if ~isempty(EEG(1).etc.dusk2dawn.cfg.savePath) % if loading from disk
+        cfg.loadRaw = ~EEG(1).etc.dusk2dawn.valid(1).raw;
+    else % if loading from memory
+        cfg.loadRaw = logical(find(cellfun(@isempty, EEG(1).etc.dusk2dawn.EEG_list))-1);
+        cfg.keepList = true;
+    end
     for f = 1:nfiles
-
         % toggle between raw and clean data % if multiple sets then keep them all in line
         EEG(f) = d2d_loadData(EEG(f), cfg);
     end
@@ -93,8 +97,15 @@ if npars > 0
       [ tmp1 tmp2 strhalt cfg ] = inputgui( 'geometry', geometry, 'uilist', uilist, ...
            'helpcom','pophelp(''pop_dusk2dawn'');', 'title', 'Apply ASR cleaning to dataset -- pop_dusk2dawn()');
 
+    % get ok or cancel
+    if strcmp(strhalt,'retuninginputui') 
+        cancelFlag = false;
+    else
+        cancelFlag = true;
+    end
+
     % return if cancelled
-    if isempty(cfg)
+    if cancelFlag
         return
     end
 

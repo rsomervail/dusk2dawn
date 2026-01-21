@@ -143,8 +143,15 @@ uilist = [         ...
 [ tmp1 tmp2 strhalt cfg ] = inputgui( 'geometry',geometry,'uilist',uilist, 'geomvert',vert, ...
    'helpcom','pophelp(''pop_d2d_plotValidation'');','title','Plot effects of ASR on various validation metrics -- pop_d2d_group_plotValidation()');
  
+% get ok or cancel
+if strcmp(strhalt,'retuninginputui') 
+    cancelFlag = false;
+else
+    cancelFlag = true;
+end
+
 % return if cancelled
-if isempty(cfg)
+if cancelFlag
     return
 end
 

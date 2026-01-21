@@ -344,7 +344,7 @@ for st = 1:nstages
                 [lineh(k), areah(k)] = boundedline( dimx_range, mean(temp2plot(:,:,k)), std(temp2plot(:,:,k)) ,'-o', 'cmap', cols_freqs(k,:)  ); hold on
             end
         end
-        ylabel 'amplitude (normalisd by frequency)'
+        ylabel 'amplitude'
         setYlim('abs',1)
         if c == 1 && r == 1, legend(lineh,o.binFreqsLabels, 'Location','northeast'); end
             editPlot; % set various plotting parameters

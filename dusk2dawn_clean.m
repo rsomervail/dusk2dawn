@@ -409,7 +409,11 @@ for f = 1:nfiles
                 else % if running totally in RAM
                     EEG_cleaned.setname  = strrep(cfg.cleanFiles{count}, '.set','');
                     EEG_cleaned.filename = cfg.cleanFiles{count};
-                    EEG.etc.dusk2dawn.EEG_list{count+1} = EEG_cleaned;
+                    if cfg.splitByStage
+                        EEG_dummy.etc.dusk2dawn.EEG_list{count+1} = EEG_cleaned;
+                    else
+                        EEG.etc.dusk2dawn.EEG_list{count+1} = EEG_cleaned;
+                    end
                 end
 
                 % print 
@@ -442,7 +446,7 @@ for f = 1:nfiles
     valid_merged = d2d_validateMerge( ctemp  );
     
     % recombine raw data if it was split into stages
-    if cfg.splitByStage
+    if cfg.splitByStage 
         EEG = d2d_recombineByStage(EEG_stages, EEG_dummy);
     end
     

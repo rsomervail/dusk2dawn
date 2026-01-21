@@ -17,7 +17,7 @@ Dusk2Dawn: an EEGLAB plugin for automatic cleaning of whole-night sleep electroe
 Sleep. 1–14.
 		  
 	History:  
-    11/01/2026 ver 4.1.0 Added the ability to avoid saving to disk and run entirely in RAM   
+    11/01/2026 ver 4.1.0 Added the ability to avoid saving to disk and run entirely in RAM (just clear the savePath paramter/box)   
     04/01/2026 ver 4.0.1 Minor edits   
     18/12/2025 ver 4.0.0 Fixed various bugs that broke the GUI on newer versions of EEGLAB & MATLAB (quick update, more bugfixes for new MATLAB versions on the way)  
     15/01/2024 ver 3.4.1 Added published paper to cite when using D2D  

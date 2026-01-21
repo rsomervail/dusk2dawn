@@ -13,13 +13,6 @@
 %%  
 function EEG = dusk2dawn_clean(EEG, cfg)
 
-%% handle inputs
-if ~isempty(cfg.savePath)
-    cfg.saveFlag = true;
-else
-    cfg.saveFlag = false;
-end
-
 %% handle multiple files
 nfiles = length(EEG);
 EEG_all = EEG; % store all datasets as other variable, doing this even if only one dataset for simplicity
@@ -235,11 +228,10 @@ for f = 1:nfiles
         valid_orig = EEG.etc.dusk2dawn.valid;
     
         % save raw dataset
-        if cfg.saveFlag
+        if ~isempty(cfg.savePath)
             ctemp = [];
             ctemp.saveName = cfg.origFile;
             ctemp.savePath = cfg.savePath;
-            ctemp.saveFlag = cfg.saveFlag;
             EEG = d2d_saveDataset(EEG, ctemp); 
             clear EEG % delete afterwards to save memory while dataset is split by stage
         end
@@ -264,11 +256,10 @@ for f = 1:nfiles
         [EEG, valid_orig] = d2d_validateCleaning(EEG, cfg); 
     
         % save raw dataset
-        if cfg.saveFlag
+        if ~isempty(cfg.savePath)
             ctemp = [];
             ctemp.saveName = cfg.origFile;
             ctemp.savePath = cfg.savePath;
-            ctemp.saveFlag = cfg.saveFlag;
             EEG = d2d_saveDataset(EEG, ctemp); % keep if not splitting by stage
         end
         
@@ -410,11 +401,10 @@ for f = 1:nfiles
                 end % end if split by stages
     
                 % save cleaned dataset
-                if cfg.saveFlag
+                if ~isempty(cfg.savePath)
                     ctemp = [];
                     ctemp.savePath = cfg.savePath;
                     ctemp.saveName = cfg.cleanFiles{count}; 
-                    ctemp.saveFlag = cfg.saveFlag;
                     EEG_cleaned = d2d_saveDataset(EEG_cleaned, ctemp);
                 else % if running totally in RAM
                     EEG_cleaned.setname  = strrep(cfg.cleanFiles{count}, '.set','');

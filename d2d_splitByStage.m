@@ -30,89 +30,7 @@ if ~isfield(cfg,'keepStagesInMemory'), cfg.keepStagesInMemory = true; end
 if ~isfield(cfg,'savePaths'), cfg.savePaths = repmat({cd},length(stages),1); end
 if ~isfield(cfg,'useEventDurations'), cfg.useEventDurations = false; end
 if ~isfield(cfg,'cleanUnscored'), cfg.cleanUnscored = true; end
-%
-% if cfg.loadInChunks || isempty(EEG) % if continuous dataset is split into chunks saved in separate .set files 
-%     
-%     % check if paths have been provided, otherwise use ui to choose files
-%     if isempty( cfg.loadPaths ) % ? could do this in master file also and remove here
-%        [files, path] = uigetfile('*.set', 'choose files to load',  'MultiSelect', 'on');
-%        cfg.loadPaths = cellfun( @(x) [path '\' x], files , 'UniformOutput', false);
-%        addpath(path{:})
-%     end
-%  
-%     stages = cfg.stageCodes;
-%     overspill = 0;
-%     
-%     % loop through sleep stages
-%     for st = 1 :length(stages)
-%         
-%         fprintf('processing sleep stage: %s\n',stages{st})
-%         
-%         % loop through datasets containing each chunk of the data
-%         for ch = 1 :length(cfg.loadPaths)
-%         
-%             % load dataset
-%             EEG = pop_loadset(cfg.loadPaths{ch});
-%             
-%             % get all events corresponding to this stage
-%             ents2take = EEG.event(strcmp( {EEG.event.type}, stages{st}));
-% 
-%             % get all timepoints corresponding to this stage
-%             indy2take = false(1,EEG.pnts);
-%             if overspill > 0 % check for overspill from last chunk
-%                 indy2take(1:overspill) = true;
-%                 overspill = 0; % reset overspill counter
-%             end
-%             if cfg.useEventDurations % if there are durations then just use these
-%                 for e = 1:length(ents2take)
-%                     indy2take( ents2take(e).latency : ents2take(e).latency+ents2take(e).duration-1 ) = true;
-%                 end
-%             else % otherwise use intervals parameter to epoch around each sleep stage event
-%                 if size(cfg.stageWin,1) == 1
-%                     cfg.stageWin = ones(length(ents2take),2).*cfg.stageWin;
-%                 end
-%                 stageInts = cfg.stageWin*EEG.srate;
-%                 for e = 1:length(ents2take)
-%                     indy2take( ents2take(e).latency+stageInts(e,1) : ents2take(e).latency+stageInts(e,2)-1 ) = true;
-%                 end
-%             end
-%             
-%             % check for overspill to next chunk
-%             overspill = length(indy2take) - EEG.pnts;
-%             if overspill > 0
-%                 indy2take = indy2take(1:EEG.pnts);
-%             end
-%             
-%             % extract data from this sleep stage
-%             if any(indy2take)
-%                 if ch == 1
-%                     EEG_chunks        = eeg_eegrej(EEG, logical2indices(~indy2take) ); % negate because function rejects timewindows 
-%                 else
-%                     EEG_chunks(end+1) = eeg_eegrej(EEG, logical2indices(~indy2take) ); % negate because function rejects timewindows 
-%                 end
-%             end
-%         
-%         end % end chunk loop
-%     
-%         % import this sleep stage to EEGlab
-%         EEG_out = pop_mergeset(EEG_chunks, 1:length(EEG_chunks));
-% 
-%         % save dataset in specified path (if cfg.saveStagesToDisk == true)
-%         ctemp = [];
-%         ctemp.saveFlag = cfg.saveStagesToDisk;
-%         ctemp.savePath = cfg.savePaths{st};
-%         EEG_out = cleanSleep_saveDataset(EEG_out,ctemp);
-%   
-%         % optionally keep dataset in memory
-%         if cfg.keepStagesInMemory
-%             EEG_out_all(st) = EEG_out;
-%             fprintf('... stored stage ''%s'' in memory\n', stages{st})
-%         end
-%    
-%     end % stage loop
-% 
-% else % if using one whole continuous dataset in memory (not loading in chunks)
- 
+
     % segment stages
     nstages = length(cfg.stageCodes);
     indy2take_all = false(1,EEG.pnts);
@@ -152,13 +70,6 @@ if ~isfield(cfg,'cleanUnscored'), cfg.cleanUnscored = true; end
         EEG_out.etc.dusk2dawn.stageSplit.thisStage  = st;
         EEG_out.setname = [EEG_out.setname '_' cfg.stageCodes{st} ];
         
-%         % save dataset in specified path (if cfg.saveStagesToDisk == true)
-%         if cfg.saveStagesToDisk
-%             ctemp = [];
-%             ctemp.saveFlag = cfg.saveStagesToDisk;
-%             ctemp.savePath = cfg.savePaths{st};
-%             EEG_out = d2d_saveDataset(EEG_out,ctemp);
-%         end
         
         % optionally keep dataset in memory
         if cfg.keepStagesInMemory

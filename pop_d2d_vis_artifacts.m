@@ -20,8 +20,8 @@ if any( arrayfun( @(x) ~isfield(x.etc,'dusk2dawn'), EEG ) )
     return
 end
 
-cfg  = EEG(1).etc.dusk2dawn.cfg;
-pars = cfg.pars; npars = length(pars.labels);
+cfg_data  = EEG(1).etc.dusk2dawn.cfg;
+pars = cfg_data.pars; npars = length(pars.labels);
 
 %% predefinitions
 space = { {} };
@@ -152,6 +152,8 @@ if (npars > 0) || (nfiles > 1) % these are the two conditions in which we need t
         end
     end
 
+else 
+    cfg = struct;
 end
 
 %% call d2d_vis_artifacts

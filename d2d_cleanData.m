@@ -103,14 +103,17 @@ if cfg.splitBySlidingWindow
 
         %% get relatively-clean reference data for calibration
         if isfield(cfg,'ref_mask') % check if this has been provided already by the user
-            
-            % get ref data mask
-            fprintf('d2d_cleanData: *** using previously-generated reference data for efficiency ***\n')
-            ref_mask = cfg.ref_mask{ch}; % important to have local variable here so it later gets outputted again
-
-            % extract reference data
-            evalc(' ref_section = pop_select(EEG_chunk, ''point'', logical2indices(ref_mask)); ');
-
+            if length(cfg.ref_mask) == nchunks % check there is a ref mask for each chunk, otherwise recompute
+                % get ref data mask
+                fprintf('d2d_cleanData: *** using previously-generated reference data for efficiency ***\n')
+                ref_mask = cfg.ref_mask{ch}; % important to have local variable here so it later gets outputted again
+    
+                % extract reference data
+                evalc(' ref_section = pop_select(EEG_chunk, ''point'', logical2indices(ref_mask)); ');
+            else
+                fprintf('d2d_cleanData: finding reference data to use for calibration ...\n')
+                evalc( ' [ref_section, ref_mask] = d2d_clean_windows(EEG_chunk, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' );
+            end
         else
             fprintf('d2d_cleanData: finding reference data to use for calibration ...\n')
             evalc( ' [ref_section, ref_mask] = d2d_clean_windows(EEG_chunk, cfg.ref_maxbadchannels, cfg.ref_tolerances, cfg.ref_wndlen);   ' );
